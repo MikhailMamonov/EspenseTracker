@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace expenseTracker.Models
 {
@@ -12,7 +14,9 @@ namespace expenseTracker.Models
     {
         public int Age { get; set; } // добавляем свойство Age
 
-        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
+        public virtual ICollection<Expense> Expenses { get; set; }
+
+    public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
@@ -21,14 +25,21 @@ namespace expenseTracker.Models
         }
     }
 
-    // добавляем модель Book
+    // добавляем модель 
     public class Expense
     {
         public int ExpenseId { get; set; }
+        [Required(ErrorMessage = "Пожалуйста, введите свое описание затраты")]
         public string Description { get; set; }
+        [Required(ErrorMessage = "Пожалуйста, введите Комментарий")]
         public string Comment { get; set; }
+        [Required(ErrorMessage = "Пожалуйста, введите сумму")]
         public int Amount { get; set; }
+        [Required(ErrorMessage = "Пожалуйста, введите дату и время")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime DateAndTime { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
     }
 
