@@ -28,7 +28,7 @@ namespace expenseTracker.Models
     // добавляем модель 
     public class Expense
     {
-        public int ExpenseId { get; set; }
+        public int Id { get; set; }
         [Required(ErrorMessage = "Пожалуйста, введите свое описание затраты")]
         public string Description { get; set; }
         [Required(ErrorMessage = "Пожалуйста, введите Комментарий")]

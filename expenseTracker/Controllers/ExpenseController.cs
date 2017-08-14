@@ -3,13 +3,17 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
+using System.Data.Entity.Core.Objects;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
+    [Authorize]
     public class ExpenseController : Controller
     {
         private ApplicationDbContext db;
@@ -25,21 +29,19 @@ namespace expenseTracker.Controllers
         public ActionResult Index()
         {
             var currentUser = manager.FindById(User.Identity.GetUserId());
-            return View(db.Expenses.ToList().Where(todo => todo.User.Id == currentUser.Id));
+            return View(db.Expenses.ToList().Where(expense =>expense.User.Id == currentUser.Id));
         }
 
-        // GET: /ToDo/Create
+        // GET: /Expense/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: /ToDo/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: /Expense/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "ExpenseId,Description,Comment,Amount,DateAndTime")] Expense expense)
+        public async Task<ActionResult> Create([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
             var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
             if (ModelState.IsValid)
@@ -51,5 +53,100 @@ namespace expenseTracker.Controllers
             }
             return View(expense);
         }
+
+        // GET: /Expense/Update
+        public async Task<ActionResult> Update(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+        // POST: /Expense/Update
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Update([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
+        {
+            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (ModelState.IsValid)
+            {
+                db.Entry(expense).State=System.Data.Entity.EntityState.Modified;
+              //  db.Entry<Expense>(expense).Reload();
+                await db.SaveChangesAsync();
+                
+                
+                
+                return RedirectToAction("Index");
+            }
+            return View(expense);
+        }
+
+        public async Task<ActionResult> Details(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+        // GET: /Expense/Delete
+        public async Task<ActionResult> Delete(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+        // POST: /Expense/Delete
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(int id)
+        {
+            Expense expense = await db.Expenses.FindAsync(id);
+            db.Expenses.Remove(expense);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+
+
     }
 }
