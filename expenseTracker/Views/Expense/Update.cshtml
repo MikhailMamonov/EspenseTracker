@@ -1,7 +1,7 @@
 ﻿@model expenseTracker.Models.Expense
 
 @{
-    Layout = null;
+    ViewBag.Title = "Update";
 }
 @using (Html.BeginForm())
 {
@@ -48,9 +48,12 @@
         </div>
     </div>
 }
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
+<div class=" container-fluid">
+    <div class="row">
+        <div class="col-md-2 btn-default">
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    </div>
 </div>
 
 @section Scripts {

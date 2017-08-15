@@ -4,49 +4,83 @@
     ViewBag.Title = "Index";
 }
 
+
 <h2>Index</h2>
 
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Comment)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Amount)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.DateAndTime)
-        </th>
-        <th></th>
-    </tr>
 
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Comment)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateAndTime)
-            </td>
-            <td>
-                @Html.ActionLink("Update", "Update", new { id = item.Id }) |
-                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-            </td>
-        </tr>
-    }
+<div class="row">
+    <div class="col-md-7">
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comment)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Amount)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateAndTime)
+                </th>
+                <th></th>
+            </tr>
 
-</table>
+
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Comment)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Amount)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DateAndTime)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Update", "Update", new { id = item.Id }) |
+                        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+    <div class="col-md-5"></div>
+    <div class="col-md-2 bg-success">
+        <label> From</label> <input type="date" id="from" placeholder="From(date)">
+    </div>
+
+    <div class="col-md-2 bg-success">
+        <label> To</label>
+        <input type="date" placeholder="To(date)">
+    </div>
+    <div class="col-sm-1 filter">
+        @Html.ActionLink("Filter", "Index")
+    </div>
+</div>
+
+@using (Html.BeginForm("DateFilter", "Expense", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-actions no-color">
+        <p>
+            <text>From</text> <input type="date" value=@ViewBag.Date /> 
+            <text>To</text> <input type="date" value=@ViewBag.Date /> 
+            <input type="submit" value="Search" />
+            </p>
+            @Html.ActionLink("Back to List", "Index")
+</div>
+}

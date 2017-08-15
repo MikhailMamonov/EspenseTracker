@@ -50,7 +50,7 @@ namespace expenseTracker.Controllers
             // Recover the profile information about the logged in user
             ViewBag.HomeTown = currentUser.UserName;
             ViewBag.FirstName = currentUser.Age;
-            ViewBag.FirstName = currentUser.Expenses;
+            ViewBag.Expenses = currentUser.Expenses;
             return View();
 
         }

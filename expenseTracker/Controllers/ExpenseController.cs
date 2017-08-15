@@ -3,6 +3,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Linq;
@@ -28,8 +29,18 @@ namespace expenseTracker.Controllers
         // GET Expense for the logged in user
         public ActionResult Index()
         {
+            ViewBag.Date = new DateTime(2000,12,06);
             var currentUser = manager.FindById(User.Identity.GetUserId());
             return View(db.Expenses.ToList().Where(expense =>expense.User.Id == currentUser.Id));
+        }
+
+
+        
+
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> All()
+        {
+        return View(await db.Expenses.ToListAsync());
         }
 
         // GET: /Expense/Create

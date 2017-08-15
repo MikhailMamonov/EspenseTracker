@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
     @Styles.Render("~/Content/css")
+
     @Scripts.Render("~/bundles/modernizr")
 
 </head>
@@ -23,10 +24,7 @@
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("My Profile", "Profile", "Home")</li>
                     <li>@Html.ActionLink("Expense", "Index", "Expense")</li>
-                    <li>@Html.ActionLink("Expense for User In Role Admin", "All", "Expense")</li>
-                    <li>@Html.ActionLink("RolesAdmin", "Index", "RolesAdmin")</li>
-                    <li>@Html.ActionLink("UsersAdmin", "Index", "UsersAdmin")</li>
-                    <li>@Html.ActionLink("Validation", "Index", "Validation")</li>
+                    <li>@Html.ActionLink("All Users", "GetAllUsers", "Manage")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
