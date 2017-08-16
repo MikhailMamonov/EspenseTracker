@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<string>
+
+@{
     ViewBag.Title = "Home Page";
 }
 
@@ -6,3 +8,14 @@
         <h3>Hello! Go to record your expenses with me.</h3>
         <br />
     </div>
+
+<table class="table">
+    @foreach (var item in Model)
+            {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item)
+            </td>
+        </tr>
+    }
+    </table>

@@ -41,7 +41,9 @@ namespace expenseTracker.Controllers
         }
 
 
+
         // GET: /Manage/GetAllUsers
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> GetAllUsers()
         {
             return View(await UserManager.Users.ToListAsync());

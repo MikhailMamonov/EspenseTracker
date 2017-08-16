@@ -24,7 +24,9 @@ namespace expenseTracker.Controllers
             manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
         }
 
-        public ActionResult Index()
+
+        [AcceptVerbs(HttpVerbs.Get)]
+        public virtual ActionResult Index()
         {
             int hour = DateTime.Now.Hour;
             ViewBag.Greeting = hour < 12 ? "Доброе утро" : "Доброго дня";

@@ -84,3 +84,4 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\Microsoft.AspNet.TelemetryCorrelation.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\System.Diagnostics.DiagnosticSource.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.Migrations.AddedId.resources
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.csprojResolveAssemblyReference.cache

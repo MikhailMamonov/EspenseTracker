@@ -14,7 +14,7 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public class ExpenseController : Controller
     {
         private ApplicationDbContext db;
