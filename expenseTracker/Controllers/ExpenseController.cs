@@ -14,7 +14,7 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class ExpenseController : Controller
     {
         private ApplicationDbContext db;
@@ -29,13 +29,35 @@ namespace expenseTracker.Controllers
         // GET Expense for the logged in user
         public ActionResult Index()
         {
-            ViewBag.Date = new DateTime(2000,12,06);
+            ViewBag.Date = new DateTime(2000, 12, 06);
             var currentUser = manager.FindById(User.Identity.GetUserId());
-            return View(db.Expenses.ToList().Where(expense =>expense.User.Id == currentUser.Id));
+            return View(db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id));
         }
 
 
-        
+
+        // GET: /Manage/UserRecords
+        // GET Expenses for filled user
+        [Authorize(Roles = "moderator")]
+        [HttpGet]
+        public ActionResult UserRecords(string id)
+        {
+            var currentUser = manager.FindById(id);
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            IEnumerable<Expense> expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            if (expenses == null)
+            {
+                return HttpNotFound();
+            }
+
+
+            return View(expenses);
+        }
+
+
 
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> All()

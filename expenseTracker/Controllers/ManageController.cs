@@ -9,6 +9,7 @@ using Microsoft.Owin.Security;
 using expenseTracker.Models;
 using System.Data.Entity;
 using System.Net;
+using System.Collections.Generic;
 
 namespace expenseTracker.Controllers
 {
@@ -17,6 +18,7 @@ namespace expenseTracker.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        
 
         public ManageController()
         {
@@ -24,6 +26,7 @@ namespace expenseTracker.Controllers
 
         public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
+           
             UserManager = userManager;
             SignInManager = signInManager;
         }
@@ -43,7 +46,7 @@ namespace expenseTracker.Controllers
 
 
         // GET: /Manage/GetAllUsers
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<ActionResult> GetAllUsers()
         {
             return View(await UserManager.Users.ToListAsync());
@@ -62,6 +65,46 @@ namespace expenseTracker.Controllers
         }
 
 
+        // GET: /Manage/CreateUser
+       [Authorize(Roles = "admin,moderator")]
+        public ActionResult CreateUser()
+        {
+            return View();
+        }
+
+        // POST: /Manage/CreateUser
+        [Authorize(Roles = "admin,moderator")]
+         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateUser(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Age = model.Age };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // если создание прошло успешно, то добавляем роль пользователя
+                    await UserManager.AddToRoleAsync(user.Id, "user");
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    
+                    // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
+                    // Send an email with this link
+                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+                    return RedirectToAction("GetAllUsers", "Manage");
+                }
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+
+        
         //
         // GET: /Manage/Details/5
         public async Task<ActionResult> Details(string id)
