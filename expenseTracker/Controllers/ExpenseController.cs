@@ -17,7 +17,17 @@ namespace expenseTracker.Controllers
     [Authorize]
     public class ExpenseController : Controller
     {
-        protected string UserId { get; set; }
+        protected string UserId
+        {
+            get
+            {
+                return (string)Session["UserId"] ?? "hi";
+            }
+            set
+            {
+                Session["UserId"] = value;
+            }
+        }
         private ApplicationDbContext db;
         private UserManager<ApplicationUser> manager;
         
@@ -79,12 +89,11 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
-            var currentUser = User.Identity.GetUserId();
-            bool fe = UserId.Equals(currentUser);
-            var fcurrentUser = await manager.FindByIdAsync(currentUser);
+           
+            var currentUser = await manager.FindByIdAsync(UserId);
             if (ModelState.IsValid)
             {
-                expense.User = fcurrentUser;
+                expense.User = currentUser;
                 db.Expenses.Add(expense);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
