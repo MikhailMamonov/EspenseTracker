@@ -17,8 +17,10 @@ namespace expenseTracker.Controllers
     [Authorize]
     public class ExpenseController : Controller
     {
+        protected string UserId { get; set; }
         private ApplicationDbContext db;
         private UserManager<ApplicationUser> manager;
+        
         public ExpenseController()
         {
             db = new ApplicationDbContext();
@@ -53,7 +55,7 @@ namespace expenseTracker.Controllers
                 return HttpNotFound();
             }
 
-
+            UserId = id;
             return View(expenses);
         }
 
@@ -64,6 +66,35 @@ namespace expenseTracker.Controllers
         {
         return View(await db.Expenses.ToListAsync());
         }
+
+        [Authorize(Roles = "moderator")]
+        // GET: /Expense/Create
+        public ActionResult CreateForUser()
+        {
+            return View();
+        }
+
+        // POST: /Expense/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
+        {
+            var currentUser = User.Identity.GetUserId();
+            bool fe = UserId.Equals(currentUser);
+            var fcurrentUser = await manager.FindByIdAsync(currentUser);
+            if (ModelState.IsValid)
+            {
+                expense.User = fcurrentUser;
+                db.Expenses.Add(expense);
+                await db.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            return View(expense);
+        }
+
+
+
+
 
         // GET: /Expense/Create
         public ActionResult Create()

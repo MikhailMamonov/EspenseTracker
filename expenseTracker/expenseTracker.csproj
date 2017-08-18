@@ -366,6 +366,7 @@
     <Content Include="Views\Home\moderator\Profile.cshtml" />
     <Content Include="Views\Home\admin\Profile.cshtml" />
     <Content Include="Views\Expense\moderator\UserRecords.cshtml" />
+    <Content Include="Views\Expense\moderator\CreateForUser.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
