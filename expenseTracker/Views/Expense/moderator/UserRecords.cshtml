@@ -44,13 +44,16 @@
                         @Html.DisplayFor(modelItem => item.DateAndTime)
                     </td>
                     <td>
-                        @Html.ActionLink("Update", "Update", new { id = item.Id }) |
-                        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                        @Html.ActionLink("Update", "UpdateForUser", new { id = item.Id }) |
+                        @Html.ActionLink("Details", "DetailsForUser", new { id = item.Id }) |
+                        @Html.ActionLink("Delete", "DeleteForUser", new { id = item.Id })
                     </td>
                 </tr>
             }
 
         </table>
+
+
+        @Html.ActionLink("Back to List", "GetAllUsers", "Manage" )
     </div>
     

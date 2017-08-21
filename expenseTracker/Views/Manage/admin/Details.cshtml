@@ -22,9 +22,12 @@
         <dd>
             @Html.DisplayFor(model => model.Age)
         </dd>
+        <dd>
+            @Html.DisplayFor(model => model.Roles)
+        </dd>
     </dl>
 </div>
 <p>
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Home", "Index", "Home")
+    @Html.ActionLink("Back to list", "GetAllUsers")
 </p>

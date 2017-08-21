@@ -10,6 +10,7 @@ using expenseTracker.Models;
 using System.Data.Entity;
 using System.Net;
 using System.Collections.Generic;
+using System.Web.Security;
 
 namespace expenseTracker.Controllers
 {
@@ -86,8 +87,10 @@ namespace expenseTracker.Controllers
                 {
                     // если создание прошло успешно, то добавляем роль пользователя
                     await UserManager.AddToRoleAsync(user.Id, "user");
+                    await UserManager.AddToRoleAsync(user.Id, "admin");
+                    await UserManager.AddToRoleAsync(user.Id, "moderator");
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -104,9 +107,10 @@ namespace expenseTracker.Controllers
         }
 
 
-        
+
         //
         // GET: /Manage/Details/5
+        
         public async Task<ActionResult> Details(string id)
         {
             if (id == null)
@@ -118,8 +122,66 @@ namespace expenseTracker.Controllers
         }
 
 
+
+        // GET: /Expense/Delete
+        [Authorize(Roles = "moderator,admin")]
+        public async Task<ActionResult> DeleteUser(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var user = await UserManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+
+
+
+            return View(user);
+        }
+
+        // POST: /Expense/Delete
+        [Authorize(Roles = "moderator,admin")]
+        [HttpPost, ActionName("DeleteUser")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmedUser([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var user = await UserManager.FindByIdAsync(id);
+            user.UserName = formuser.UserName;
+            user.Age = formuser.Age;
+            if (ModelState.IsValid)
+            {
+                //If user has existing Role then remove the user from the role
+                // This also accounts for the case when the Admin selected Empty from the drop-down and
+                // this means that all roles for the user must be removed
+                var rolesForUser = await UserManager.GetRolesAsync(id);
+                if (rolesForUser.Count() > 0)
+                {
+                    foreach (var item in rolesForUser)
+                    {
+                        var result = await UserManager.RemoveFromRoleAsync(id, item);
+                    }
+                }
+
+                //Update the user details
+                await UserManager.DeleteAsync(user);
+
+                
+            }
+            return RedirectToAction("GetAllUsers");
+        }
+
+
         //
         // GET: /Users/Edit/1
+        [Authorize(Roles = "moderator,admin")]
         public async Task<ActionResult> Edit(string id)
         {
             if (id == null)
@@ -137,6 +199,7 @@ namespace expenseTracker.Controllers
 
         //
         // POST: /Users/Edit/5
+        [Authorize(Roles = "moderator,admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)

@@ -70,13 +70,6 @@ namespace expenseTracker.Controllers
         }
 
 
-
-        [Authorize(Roles = "admin")]
-        public async Task<ActionResult> All()
-        {
-        return View(await db.Expenses.ToListAsync());
-        }
-
         [Authorize(Roles = "moderator")]
         // GET: /Expense/Create
         public ActionResult CreateForUser()
@@ -96,7 +89,7 @@ namespace expenseTracker.Controllers
                 expense.User = currentUser;
                 db.Expenses.Add(expense);
                 await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction("GetAllUsers", "Manage");
             }
             return View(expense);
         }
@@ -167,9 +160,74 @@ namespace expenseTracker.Controllers
             return View(expense);
         }
 
+
+        // GET: /Expense/Update
+        [Authorize(Roles = "moderator")]
+        public async Task<ActionResult> UpdateForUser(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(UserId);
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+        // POST: /Expense/Update
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> UpdateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
+        {
+            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (ModelState.IsValid)
+            {
+                db.Entry(expense).State = System.Data.Entity.EntityState.Modified;
+                //  db.Entry<Expense>(expense).Reload();
+                await db.SaveChangesAsync();
+
+
+
+                return RedirectToAction("GetAllUsers", "Manage");
+            }
+            return View(expense);
+        }
+
+
         public async Task<ActionResult> Details(int? id)
         {
             var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+
+        [Authorize(Roles = "moderator")]
+        public async Task<ActionResult> DetailsForUser(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(UserId);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -219,6 +277,41 @@ namespace expenseTracker.Controllers
             return RedirectToAction("Index");
         }
 
+
+
+        // GET: /Expense/Delete
+        [Authorize(Roles = "moderator")]
+        public async Task<ActionResult> DeleteForUser(int? id)
+        {
+            var currentUser = await manager.FindByIdAsync(UserId);
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Expense expense = await db.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return HttpNotFound();
+            }
+
+            if (expense.User.Id != currentUser.Id)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+            }
+            return View(expense);
+        }
+
+        // POST: /Expense/Delete
+        [Authorize(Roles = "moderator")]
+        [HttpPost, ActionName("DeleteForUser")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmedForUser(int id)
+        {
+            Expense expense = await db.Expenses.FindAsync(id);
+            db.Expenses.Remove(expense);
+            await db.SaveChangesAsync();
+            return RedirectToAction("GetAllUsers", "Manage");
+        }
 
 
     }
