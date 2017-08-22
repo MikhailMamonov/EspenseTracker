@@ -11,6 +11,7 @@ using System.Data.Entity;
 using System.Net;
 using System.Collections.Generic;
 using System.Web.Security;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace expenseTracker.Controllers
 {
@@ -23,15 +24,17 @@ namespace expenseTracker.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-        
+        private ApplicationRoleManager _roleManager;
+
+
 
         public ManageController()
         {
         }
 
-        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager)
         {
-           
+            RoleManager = roleManager;
             UserManager = userManager;
             SignInManager = signInManager;
         }
@@ -45,6 +48,19 @@ namespace expenseTracker.Controllers
             private set 
             { 
                 _signInManager = value; 
+            }
+        }
+
+
+        public ApplicationRoleManager RoleManager
+        {
+            get
+            {
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+            }
+            private set
+            {
+                _roleManager = value;
             }
         }
 
@@ -91,6 +107,8 @@ namespace expenseTracker.Controllers
                 {
                     // если создание прошло успешно, то добавляем роль пользователя
                     await UserManager.AddToRoleAsync(user.Id, "user");
+            
+
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
 
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
@@ -101,7 +119,7 @@ namespace expenseTracker.Controllers
 
                     return RedirectToAction("GetAllUsers", "Manage");
                 }
-                AddErrors(result);
+               
             }
 
             // If we got this far, something failed, redisplay form
@@ -181,11 +199,30 @@ namespace expenseTracker.Controllers
         }
 
 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RoleAddToUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser, string RoleId)
+        {
+            ApplicationUser user = UserManager.FindById(formuser.Id);
+            UserManager.AddToRole(user.Id, RoleName);
+
+            ViewBag.ResultMessage = "Role created successfully !";
+
+            // prepopulat roles for the view dropdown
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            ViewBag.Roles = list;
+            IList<string> textList = UserManager.GetRoles(user.Id);
+            ViewBag.RolesText = textList;
+            return View("Edit", user);
+        }
+
         //
         // GET: /Users/Edit
         [Authorize(Roles = "moderator,admin")]
         public async Task<ActionResult> Edit(string id)
         {
+            
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -196,6 +233,14 @@ namespace expenseTracker.Controllers
             {
                 return HttpNotFound();
             }
+
+
+            // prepopulat roles for the view dropdown
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            ViewBag.Roles = list;
+            IList<string> textList = UserManager.GetRoles(id);
+            ViewBag.RolesText = textList;
             return View(user);
         }
 
