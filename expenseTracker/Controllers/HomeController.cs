@@ -12,6 +12,10 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
+
+    /// <summary>
+    /// start Controller
+    /// </summary>
     [Authorize]
     public class HomeController : Controller
     {
@@ -57,39 +61,11 @@ namespace expenseTracker.Controllers
 
         }
 
-        [Authorize(Roles = "admin")]
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
 
             return View();
-        }
-
-        [HttpGet]
-        public ViewResult RsvpForm()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> RsvpForm(Expense expense)
-        {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
-            if (ModelState.IsValid)
-            {
-                expense.User = currentUser;
-                db.Expenses.Add(expense);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(expense);
         }
 
         public async Task<ActionResult> Create([Bind(Include = "ExpenseId,Description,Comment,Amount,DateAndTime")] Expense expense)

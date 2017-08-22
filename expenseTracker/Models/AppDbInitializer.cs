@@ -8,6 +8,9 @@ using System.Web;
 
 namespace expenseTracker.Models
 {
+    /// <summary>
+    /// Db initializer
+    /// </summary>
         public class AppDbInitializer : DropCreateDatabaseAlways<ApplicationDbContext>
         {
             protected override void Seed(ApplicationDbContext context)
@@ -16,25 +19,25 @@ namespace expenseTracker.Models
 
                 var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
 
-                // создаем две роли
+                // create three roles
                 var role1 = new IdentityRole { Name = "admin" };
                 var role2 = new IdentityRole { Name = "user" };
                 var role3 = new IdentityRole { Name = "moderator" };
 
-            // добавляем роли в бд
+            // add roles in bd
             roleManager.Create(role1);
             roleManager.Create(role2);
             roleManager.Create(role3);
 
-            // создаем пользователей
+            // create users
             var admin = new ApplicationUser { Email = "somemail@mail.ru", UserName = "somemail@mail.ru" };
                 string password = "ad46D_ewr3";
                 var result = userManager.Create(admin, password);
 
-                // если создание пользователя прошло успешно
+                // if creating of user is success
                 if (result.Succeeded)
                 {
-                    // добавляем для пользователя роль
+                    // add user in role
                     userManager.AddToRole(admin.Id, role1.Name);
                     userManager.AddToRole(admin.Id, role2.Name);
                     userManager.AddToRole(admin.Id, role3.Name);

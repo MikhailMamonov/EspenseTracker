@@ -14,6 +14,10 @@ using System.Web.Security;
 
 namespace expenseTracker.Controllers
 {
+
+    /// <summary>
+    /// Controller for manage of users
+    /// </summary>
     [Authorize]
     public class ManageController : Controller
     {
@@ -87,8 +91,6 @@ namespace expenseTracker.Controllers
                 {
                     // если создание прошло успешно, то добавляем роль пользователя
                     await UserManager.AddToRoleAsync(user.Id, "user");
-                    await UserManager.AddToRoleAsync(user.Id, "admin");
-                    await UserManager.AddToRoleAsync(user.Id, "moderator");
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
 
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
@@ -109,7 +111,7 @@ namespace expenseTracker.Controllers
 
 
         //
-        // GET: /Manage/Details/5
+        // GET: /Manage/Details
         
         public async Task<ActionResult> Details(string id)
         {
@@ -180,7 +182,7 @@ namespace expenseTracker.Controllers
 
 
         //
-        // GET: /Users/Edit/1
+        // GET: /Users/Edit
         [Authorize(Roles = "moderator,admin")]
         public async Task<ActionResult> Edit(string id)
         {
@@ -198,7 +200,7 @@ namespace expenseTracker.Controllers
         }
 
         //
-        // POST: /Users/Edit/5
+        // POST: /Users/Edit
         [Authorize(Roles = "moderator,admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]

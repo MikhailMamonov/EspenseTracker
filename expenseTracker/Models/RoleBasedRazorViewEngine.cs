@@ -8,7 +8,10 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Models
 {
-    /// <summary>
+    //Class for generate partial view for different users 
+   //
+   //     
+   //     /// <summary>
     /// A razor based view engine that locates views based on their role.
     /// </summary>
     public class RoleBasedRazorViewEngine : RazorViewEngine

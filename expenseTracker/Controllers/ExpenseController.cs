@@ -14,6 +14,9 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
+    /// <summary>
+    /// Controller for manage expenses of user
+    /// </summary>
     [Authorize]
     public class ExpenseController : Controller
     {
@@ -71,13 +74,14 @@ namespace expenseTracker.Controllers
 
 
         [Authorize(Roles = "moderator")]
-        // GET: /Expense/Create
+        // GET: /Expense/CreateForUser
+        //Create record for user
         public ActionResult CreateForUser()
         {
             return View();
         }
 
-        // POST: /Expense/Create
+        // POST: /Expense/CreateForUser
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
@@ -161,7 +165,8 @@ namespace expenseTracker.Controllers
         }
 
 
-        // GET: /Expense/Update
+        // GET: /Expense/UpdateForUser
+        //Update record of user
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> UpdateForUser(int? id)
         {
@@ -224,6 +229,7 @@ namespace expenseTracker.Controllers
         }
 
 
+        //Details for user
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> DetailsForUser(int? id)
         {
@@ -279,7 +285,7 @@ namespace expenseTracker.Controllers
 
 
 
-        // GET: /Expense/Delete
+        // GET: /Expense/DeleteForUser
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> DeleteForUser(int? id)
         {
