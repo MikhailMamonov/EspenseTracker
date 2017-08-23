@@ -12,6 +12,10 @@
     <title>Edit</title>
 </head>
 <body>
+
+
+ 
+
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
@@ -19,36 +23,19 @@
         <div class="form-horizontal">
             <h4>ApplicationUser</h4>
             <hr />
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-            <div class="form-group">
-                @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            @if (@ViewBag.ResultMessage != "" && @ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @Html.Display("@ViewBag.ResultMessage")
                 </div>
-            </div>
-
+            }
             <div class="form-group">
                 @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                    @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
                 </div>
             </div>
-
-
-
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.EmailConfirmed, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    <div class="checkbox">
-                        @Html.EditorFor(model => model.EmailConfirmed)
-                        @Html.ValidationMessageFor(model => model.EmailConfirmed, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-            </div>
-
 
 
 
@@ -56,7 +43,7 @@
                 @Html.LabelFor(model => model.Roles, htmlAttributes: new { @class = "control-label col-md-2" })
                 <table>
                     <tr>
-                        @foreach (var item in ViewBag.RolesText)
+                        @foreach (var item in ViewBag.RolesForDisplay)
                 {
 
                             <td>
@@ -74,28 +61,12 @@
             </div>
 
             
-            
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.TwoFactorEnabled, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    <div class="checkbox">
-                        @Html.EditorFor(model => model.TwoFactorEnabled)
-                        @Html.ValidationMessageFor(model => model.TwoFactorEnabled, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-            </div>
+           
 
 
             @Html.HiddenFor(model => model.Id)
 
-            <div class="form-group">
-                @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
-                </div>
-            </div>
+            
 
             <div class="form-group">
                 @Html.LabelFor(model => model.Age, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -116,70 +87,51 @@
         </div>
     }
 
-
-    <h2>Manage User Roles</h2>
-    @Html.ActionLink("Create New Role", "Create") | @Html.ActionLink("Manage User Role", "ManageUserRoles")
-    <hr />
-
-    <h2>Role Add to User</h2>
+    <h4>Role Add to User</h4>
 
     @using (Html.BeginForm("RoleAddToUser", "Manage"))
             {
+
         @Html.AntiForgeryToken()
         @Html.ValidationSummary(true)
+        <div class="form-horizontal">
+            <div class="form-group">
+                Username : @Html.Display("UserName")
+                <br />
+                Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select ...")
+            </div>
 
-        <p>
-            Username : @Html.TextBox("UserName")
-            Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select ...")
-
-        </p>
-
-           @Html.HiddenFor(model => model.Id)
-                <input type="submit" value="Save" />
-    }
-    <hr />
-    <h3>Get Roles for a User</h3>
-    @using (Html.BeginForm("GetRoles", "Roles"))
-            {
-        @Html.AntiForgeryToken()
-        <p>
-            Username : @Html.TextBox("UserName")
-            <input type="submit" value="Get Roles for this User" />
-        </p>
-    }
-
-    @if (ViewBag.RolesForThisUser != null)
-            {
-        <div style="background-color:yellow;">
-            <h3>Roles for this user </h3>
-            <ol>
-                @foreach (string s in ViewBag.RolesForThisUser)
-                {
-                    <li>@s</li>
+            @Html.HiddenFor(model => model.Id)
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Save" />
+                    </div>
+                </div>
+                </div>
                 }
-            </ol>
+                <h4>Delete A User from a Role</h4>
+
+                @using (Html.BeginForm("DeleteRoleForUser", "Manage"))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true)
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            Username : @Html.Display("UserName")
+                            <br />
+                            Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.RolesForDelete, "Select ...")
+                        </div>
+                        @Html.HiddenFor(model => model.Id)
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="submit" value="Delete this user from Role" />
         </div>
-    }
+                            </div>
+                        </div>
+                                }
 
-    <hr />
-    <h3>Delete A User from a Role</h3>
-
-    @using (Html.BeginForm("DeleteRoleForUser", "Roles"))
-            {
-        @Html.AntiForgeryToken()
-        @Html.ValidationSummary(true)
-
-        <p>
-            Username : @Html.TextBox("UserName")
-            Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select ...")
-
-        </p>
-
-                <input type="submit" value="Delete this user from Role" />
-    }
-
-    <div>
-        @Html.ActionLink("Back", "GetAllUsers")
-    </div>
+                                <div>
+                                    @Html.ActionLink("Back", "GetAllUsers")
+                                </div>
 </body>
 </html>

@@ -90,14 +90,18 @@ namespace expenseTracker.Controllers
        [Authorize(Roles = "admin,moderator")]
         public ActionResult CreateUser()
         {
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            ViewBag.Roles = list;
             return View();
         }
 
+    
         // POST: /Manage/CreateUser
         [Authorize(Roles = "admin,moderator")]
          [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateUser(RegisterViewModel model)
+        public async Task<ActionResult> CreateUser(RegisterViewModel model, string RoleName)
         {
             if (ModelState.IsValid)
             {
@@ -106,7 +110,7 @@ namespace expenseTracker.Controllers
                 if (result.Succeeded)
                 {
                     // если создание прошло успешно, то добавляем роль пользователя
-                    await UserManager.AddToRoleAsync(user.Id, "user");
+                    await UserManager.AddToRoleAsync(user.Id, RoleName);
             
 
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
@@ -127,10 +131,82 @@ namespace expenseTracker.Controllers
         }
 
 
+        //
+        // GET: /Users/Edit
+        [Authorize(Roles = "moderator,admin")]
+        public async Task<ActionResult> Edit(string id)
+        {
+
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var user = await UserManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+
+
+            // prepopulat roles for the view dropdown
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            var listForDelete = UserManager.GetRoles(id).ToList().Select(rr =>
+            new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
+            List<SelectListItem> roles = new List<SelectListItem>();
+            foreach (var role in list)
+            {
+                if (!UserManager.IsInRole(user.Id, role.Value))
+                { roles.Add(role); }
+            }
+
+            ViewBag.Roles = roles;
+            IList<string> textList = UserManager.GetRoles(id);
+            ViewBag.RolesForDisplay = textList;
+            ViewBag.RolesForDelete = listForDelete;
+            return View(user);
+        }
+
+        //
+        // POST: /Users/Edit
+        [Authorize(Roles = "moderator,admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var user = await UserManager.FindByIdAsync(id);
+            user.UserName = formuser.UserName;
+            user.Age = formuser.Age;
+            if (ModelState.IsValid)
+            {
+                //Update the user details
+                await UserManager.UpdateAsync(user);
+
+                //If user has existing Role then remove the user from the role
+                // This also accounts for the case when the Admin selected Empty from the drop-down and
+                // this means that all roles for the user must be removed
+                var rolesForUser = await UserManager.GetRolesAsync(id);
+                if (rolesForUser.Count() > 0)
+                {
+                    foreach (var item in rolesForUser)
+                    {
+                        var result = await UserManager.RemoveFromRoleAsync(id, item);
+                    }
+                }
+            }
+            return RedirectToAction("GetAllUsers");
+        }
+
+
 
         //
         // GET: /Manage/Details
-        
+
         public async Task<ActionResult> Details(string id)
         {
             if (id == null)
@@ -205,79 +281,59 @@ namespace expenseTracker.Controllers
         public ActionResult RoleAddToUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser, string RoleId)
         {
             ApplicationUser user = UserManager.FindById(formuser.Id);
-            UserManager.AddToRole(user.Id, RoleName);
-
-            ViewBag.ResultMessage = "Role created successfully !";
+            if (!UserManager.IsInRole(user.Id, RoleName))
+            {
+                UserManager.AddToRole(user.Id, RoleName);
+                ViewBag.ResultMessage = "Role created successfully !";
+            }
 
             // prepopulat roles for the view dropdown
             var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            ViewBag.Roles = list;
-            IList<string> textList = UserManager.GetRoles(user.Id);
-            ViewBag.RolesText = textList;
+            List<SelectListItem> roles = new List<SelectListItem>();
+            foreach (var role in list)
+            {
+                if (!UserManager.IsInRole(user.Id, role.Value))
+                { roles.Add(role); }
+            }
+
+            ViewBag.Roles = roles;
+            var listForDelete = UserManager.GetRoles(formuser.Id).ToList().Select(rr => new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
+            IList<string> displayRoles = UserManager.GetRoles(user.Id);
+            ViewBag.RolesForDisplay = displayRoles;
+            ViewBag.RolesForDelete = listForDelete;
             return View("Edit", user);
         }
 
-        //
-        // GET: /Users/Edit
-        [Authorize(Roles = "moderator,admin")]
-        public async Task<ActionResult> Edit(string id)
-        {
-            
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-
-            var user = await UserManager.FindByIdAsync(id);
-            if (user == null)
-            {
-                return HttpNotFound();
-            }
 
 
-            // prepopulat roles for the view dropdown
-            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
-            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            ViewBag.Roles = list;
-            IList<string> textList = UserManager.GetRoles(id);
-            ViewBag.RolesText = textList;
-            return View(user);
-        }
 
-        //
-        // POST: /Users/Edit
-        [Authorize(Roles = "moderator,admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        public ActionResult DeleteRoleForUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser)
         {
-            if (id == null)
+            ApplicationUser user = UserManager.FindById(formuser.Id);
+                UserManager.RemoveFromRole(user.Id, RoleName);
+                ViewBag.ResultMessage = "Role removed from this user successfully !";
+            // prepopulat roles for the view dropdown
+            // prepopulat roles for the view dropdown
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            List<SelectListItem> roles = new List<SelectListItem>();
+            foreach (var role in list)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                if (!UserManager.IsInRole(user.Id, role.Value))
+                { roles.Add(role); }
             }
-            var user = await UserManager.FindByIdAsync(id);
-            user.UserName = formuser.UserName;
-            user.Age = formuser.Age;
-            if (ModelState.IsValid)
-            {
-                //Update the user details
-                await UserManager.UpdateAsync(user);
-
-                //If user has existing Role then remove the user from the role
-                // This also accounts for the case when the Admin selected Empty from the drop-down and
-                // this means that all roles for the user must be removed
-                var rolesForUser = await UserManager.GetRolesAsync(id);
-                if (rolesForUser.Count() > 0)
-                {
-                    foreach (var item in rolesForUser)
-                    {
-                        var result = await UserManager.RemoveFromRoleAsync(id, item);
-                    }
-                }
-            }
-            return RedirectToAction("GetAllUsers");
+            ViewBag.Roles = roles;
+            var listForDelete = UserManager.GetRoles(formuser.Id).ToList().Select(rr => new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
+            IList<string> displayRoles = UserManager.GetRoles(user.Id);
+            ViewBag.RolesForDisplay = displayRoles;
+            ViewBag.RolesForDelete = listForDelete;
+            return View("Edit",user);
         }
 
+
+
+       
         //
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)

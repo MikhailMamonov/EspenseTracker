@@ -23,7 +23,14 @@
             @Html.TextBoxFor(m => m.Age, new { @class = "form-control" })
         </div>
     </div>
+
+    <h4>Role Add to User</h4>
+        <p>
+            Role Name: @Html.DropDownList("RoleName", (IEnumerable<SelectListItem>)ViewBag.Roles, "Select ...")
+        </p>
+
     
+
     <div class="form-group">
         @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
         <div class="col-md-10">
