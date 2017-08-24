@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace expenseTracker.Controllers
         }
         private ApplicationDbContext db;
         private UserManager<ApplicationUser> manager;
-        
+
         public ExpenseController()
         {
             db = new ApplicationDbContext();
@@ -46,6 +47,15 @@ namespace expenseTracker.Controllers
         {
             ViewBag.Date = new DateTime(2000, 12, 06);
             var currentUser = manager.FindById(User.Identity.GetUserId());
+            var currCulture = CultureInfo.CurrentCulture;
+            var weeks = new List<string>();
+            foreach (var expense in db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id)) {
+                DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(expense.DateAndTime);
+                // Return the week of our adjusted day
+                weeks.Add(CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(expense.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday).ToString());
+            }
+
+            ViewBag.weeks = weeks.Distinct().ToList();
             return View(db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id));
         }
 
@@ -86,7 +96,44 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
-           
+
+            var currentUser = await manager.FindByIdAsync(UserId);
+            if (ModelState.IsValid)
+            {
+                expense.User = currentUser;
+                db.Expenses.Add(expense);
+                await db.SaveChangesAsync();
+                return RedirectToAction("GetAllUsers", "Manage");
+            }
+            return View(expense);
+        }
+
+
+        // GET: /Expense/TotalAmount
+        //Total amount of records for user
+        public ActionResult TotalAmount(string week) {
+         int count = 0;
+        int amount = 0;
+        ViewBag.weekNumber = week;
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+        var expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            foreach (var i in expenses) {
+                DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(i.DateAndTime);
+                if (CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(i.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) == Int32.Parse(week)) {
+                    amount += i.Amount;
+                    count++;
+                }
+            }
+            ViewBag.totalAmount = (amount / count).ToString();
+            return View();
+    }
+
+        // POST: /Expense/CreateForUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> TotalAmount([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
+        {
+
             var currentUser = await manager.FindByIdAsync(UserId);
             if (ModelState.IsValid)
             {
@@ -100,10 +147,32 @@ namespace expenseTracker.Controllers
 
 
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DateFilter(DateTime? fromDate, DateTime? toDate)
+        {
+
+            if (ModelState.IsValid)
+            {
+            }
+
+            ViewBag.fromDate = fromDate;
+            ViewBag.toDate = toDate;
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+            var expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            List<Expense> expensesForFilter = new List<Expense>();
+            foreach (var expense in expenses) {
+                if (expense.DateAndTime.CompareTo(fromDate) >= 0 && expense.DateAndTime.CompareTo(toDate) <= 0) {
+                    expensesForFilter.Add(expense);
+                }
+            }
+                return View("Index",expensesForFilter);
+            
+        }
 
 
-        // GET: /Expense/Create
-        public ActionResult Create()
+            // GET: /Expense/Create
+            public ActionResult Create()
         {
             return View();
         }

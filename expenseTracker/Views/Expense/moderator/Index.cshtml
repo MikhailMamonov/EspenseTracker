@@ -54,30 +54,27 @@
 
         </table>
     </div>
-    <div class="col-md-5"></div>
-    <div class="col-md-2 bg-success">
-        <label> From</label> <input type="date" id="from" placeholder="From(date)">
-    </div>
 
-    <div class="col-md-2 bg-success">
-        <label> To</label>
-        <input type="date" placeholder="To(date)">
-    </div>
-    <div class="col-sm-1 filter">
-        @Html.ActionLink("Filter", "Index")
-    </div>
+    @Html.ActionLink("Reset filter", "Index")
 </div>
-
-@using (Html.BeginForm("DateFilter", "Expense", FormMethod.Post))
+<div class="row">
+    @foreach (var item in ViewBag.weeks)
+    {
+        <div class="col-md-1">
+            @Html.ActionLink((string)item, "TotalAmount", "expense", new { week = item }, null)
+        </div>
+    }
+</div>
+@using (Html.BeginForm("DateFilter", "Expense"))
 {
     @Html.AntiForgeryToken()
-
+    @Html.ValidationSummary(true)
     <div class="form-actions no-color">
         <p>
-            <text>From</text> <input type="date" value=@ViewBag.Date /> 
-            <text>To</text> <input type="date" value=@ViewBag.Date /> 
+            <text>From</text> <input type="date" name="fromDate" id="fromDate" value=@ViewBag.Date />
+            <text>To</text> <input name="toDate" type="date" id="toDate" value=@ViewBag.Date />
             <input type="submit" value="Search" />
-            </p>
-           @Html.ActionLink("Back to Home", "Index", "Home")
-</div>
+        </p>
+        @Html.ActionLink("Back to Home", "Index", "Home")
+    </div>
 }
