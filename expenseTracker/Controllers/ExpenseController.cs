@@ -112,7 +112,6 @@ namespace expenseTracker.Controllers
         // GET: /Expense/TotalAmount
         //Total amount of records for user
         public ActionResult TotalAmount(string week) {
-         int count = 0;
         int amount = 0;
         ViewBag.weekNumber = week;
             var currentUser = manager.FindById(User.Identity.GetUserId());
@@ -121,10 +120,10 @@ namespace expenseTracker.Controllers
                 DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(i.DateAndTime);
                 if (CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(i.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) == Int32.Parse(week)) {
                     amount += i.Amount;
-                    count++;
                 }
             }
-            ViewBag.totalAmount = (amount / count).ToString();
+            ViewBag.totalAmount = (amount).ToString();
+            ViewBag.averageDay = (amount / 7).ToString();
             return View();
     }
 

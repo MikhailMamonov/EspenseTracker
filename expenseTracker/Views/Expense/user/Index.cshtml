@@ -57,7 +57,14 @@
 
     @Html.ActionLink("Reset filter", "Index")
 </div>
-
+<div class="row">
+    @foreach (var item in ViewBag.weeks)
+    {
+        <div class="col-md-1">
+            @Html.ActionLink((string)item, "TotalAmount", "expense", new { week = item }, null)
+        </div>
+    }
+</div>
 @using (Html.BeginForm("DateFilter", "Expense"))
 {
     @Html.AntiForgeryToken()

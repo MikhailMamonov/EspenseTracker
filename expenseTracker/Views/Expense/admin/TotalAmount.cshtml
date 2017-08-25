@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewBag.Title = "TotalAmount";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>TotalAmount</title>
+</head>
+<body>
+    <div class=" row"> 
+        <h5>Total amount by week number @ViewBag.weekNumber</h5>
+        <div class="col-lg-3">@ViewBag.totalAmount</div>
+        <h5>Average day amount by week number @ViewBag.weekNumber</h5>
+        <div class="col-lg-3">@ViewBag.averageDay</div>
+    </div>
+
+    @Html.ActionLink("Back to index", "Index")
+</body>
+</html>
