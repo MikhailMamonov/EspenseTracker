@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\expenseTracker"
   ],
-  "SelectedNode": "\\expenseTracker",
+  "SelectedNode": "\\expenseTracker\\Controllers",
   "PreviewInSolutionExplorer": false
 }

@@ -15,6 +15,7 @@ using System.Web.Mvc;
 
 namespace expenseTracker.Controllers
 {
+    /// <inheritdoc />
     /// <summary>
     /// Controller for manage expenses of user
     /// </summary>
@@ -23,22 +24,16 @@ namespace expenseTracker.Controllers
     {
         protected string UserId
         {
-            get
-            {
-                return (string)Session["UserId"] ?? "hi";
-            }
-            set
-            {
-                Session["UserId"] = value;
-            }
+            get => (string)Session["UserId"] ?? "hi";
+            set => Session["UserId"] = value;
         }
-        private ApplicationDbContext db;
-        private UserManager<ApplicationUser> manager;
+        private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _manager;
 
         public ExpenseController()
         {
-            db = new ApplicationDbContext();
-            manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+            _db = new ApplicationDbContext();
+            _manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(_db));
         }
 
         // GET: /Expense/
@@ -46,17 +41,17 @@ namespace expenseTracker.Controllers
         public ActionResult Index()
         {
             ViewBag.Date = new DateTime(2000, 12, 06);
-            var currentUser = manager.FindById(User.Identity.GetUserId());
+            var currentUser = _manager.FindById(User.Identity.GetUserId());
             var currCulture = CultureInfo.CurrentCulture;
             var weeks = new List<string>();
-            foreach (var expense in db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id)) {
+            foreach (var expense in _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id)) {
                 DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(expense.DateAndTime);
                 // Return the week of our adjusted day
                 weeks.Add(CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(expense.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday).ToString());
             }
 
             ViewBag.weeks = weeks.Distinct().ToList();
-            return View(db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id));
+            return View(_db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id));
         }
 
 
@@ -67,12 +62,12 @@ namespace expenseTracker.Controllers
         [HttpGet]
         public ActionResult UserRecords(string id)
         {
-            var currentUser = manager.FindById(id);
+            var currentUser = _manager.FindById(id);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            IEnumerable<Expense> expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            IEnumerable<Expense> expenses = _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
             if (expenses == null)
             {
                 return HttpNotFound();
@@ -97,12 +92,12 @@ namespace expenseTracker.Controllers
         public async Task<ActionResult> CreateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
 
-            var currentUser = await manager.FindByIdAsync(UserId);
+            var currentUser = await _manager.FindByIdAsync(UserId);
             if (ModelState.IsValid)
             {
                 expense.User = currentUser;
-                db.Expenses.Add(expense);
-                await db.SaveChangesAsync();
+                _db.Expenses.Add(expense);
+                await _db.SaveChangesAsync();
                 return RedirectToAction("GetAllUsers", "Manage");
             }
             return View(expense);
@@ -114,8 +109,8 @@ namespace expenseTracker.Controllers
         public ActionResult TotalAmount(string week) {
         int amount = 0;
         ViewBag.weekNumber = week;
-            var currentUser = manager.FindById(User.Identity.GetUserId());
-        var expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            var currentUser = _manager.FindById(User.Identity.GetUserId());
+        var expenses = _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
             foreach (var i in expenses) {
                 DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(i.DateAndTime);
                 if (CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(i.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) == Int32.Parse(week)) {
@@ -133,12 +128,12 @@ namespace expenseTracker.Controllers
         public async Task<ActionResult> TotalAmount([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
 
-            var currentUser = await manager.FindByIdAsync(UserId);
+            var currentUser = await _manager.FindByIdAsync(UserId);
             if (ModelState.IsValid)
             {
                 expense.User = currentUser;
-                db.Expenses.Add(expense);
-                await db.SaveChangesAsync();
+                _db.Expenses.Add(expense);
+                await _db.SaveChangesAsync();
                 return RedirectToAction("GetAllUsers", "Manage");
             }
             return View(expense);
@@ -157,8 +152,8 @@ namespace expenseTracker.Controllers
 
             ViewBag.fromDate = fromDate;
             ViewBag.toDate = toDate;
-            var currentUser = manager.FindById(User.Identity.GetUserId());
-            var expenses = db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
+            var currentUser = _manager.FindById(User.Identity.GetUserId());
+            var expenses = _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
             List<Expense> expensesForFilter = new List<Expense>();
             foreach (var expense in expenses) {
                 if (expense.DateAndTime.CompareTo(fromDate) >= 0 && expense.DateAndTime.CompareTo(toDate) <= 0) {
@@ -181,12 +176,12 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (ModelState.IsValid)
             {
                 expense.User = currentUser;
-                db.Expenses.Add(expense);
-                await db.SaveChangesAsync();
+                _db.Expenses.Add(expense);
+                await _db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
             return View(expense);
@@ -195,12 +190,12 @@ namespace expenseTracker.Controllers
         // GET: /Expense/Update
         public async Task<ActionResult> Update(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -218,12 +213,12 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Update([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (ModelState.IsValid)
             {
-                db.Entry(expense).State=System.Data.Entity.EntityState.Modified;
+                _db.Entry(expense).State=System.Data.Entity.EntityState.Modified;
               //  db.Entry<Expense>(expense).Reload();
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 
                 
                 
@@ -238,12 +233,12 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> UpdateForUser(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(UserId);
+            var currentUser = await _manager.FindByIdAsync(UserId);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -261,12 +256,12 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateForUser([Bind(Include = "Id,Description,Comment,Amount,DateAndTime")] Expense expense)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (ModelState.IsValid)
             {
-                db.Entry(expense).State = System.Data.Entity.EntityState.Modified;
+                _db.Entry(expense).State = System.Data.Entity.EntityState.Modified;
                 //  db.Entry<Expense>(expense).Reload();
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
 
 
@@ -278,12 +273,12 @@ namespace expenseTracker.Controllers
 
         public async Task<ActionResult> Details(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -301,12 +296,12 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> DetailsForUser(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(UserId);
+            var currentUser = await _manager.FindByIdAsync(UserId);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -322,12 +317,12 @@ namespace expenseTracker.Controllers
         // GET: /Expense/Delete
         public async Task<ActionResult> Delete(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
+            var currentUser = await _manager.FindByIdAsync(User.Identity.GetUserId());
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -345,9 +340,9 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Expense expense = await db.Expenses.FindAsync(id);
-            db.Expenses.Remove(expense);
-            await db.SaveChangesAsync();
+            Expense expense = await _db.Expenses.FindAsync(id);
+            _db.Expenses.Remove(expense);
+            await _db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
@@ -357,12 +352,12 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator")]
         public async Task<ActionResult> DeleteForUser(int? id)
         {
-            var currentUser = await manager.FindByIdAsync(UserId);
+            var currentUser = await _manager.FindByIdAsync(UserId);
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Expense expense = await db.Expenses.FindAsync(id);
+            Expense expense = await _db.Expenses.FindAsync(id);
             if (expense == null)
             {
                 return HttpNotFound();
@@ -381,9 +376,9 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmedForUser(int id)
         {
-            Expense expense = await db.Expenses.FindAsync(id);
-            db.Expenses.Remove(expense);
-            await db.SaveChangesAsync();
+            Expense expense = await _db.Expenses.FindAsync(id);
+            _db.Expenses.Remove(expense);
+            await _db.SaveChangesAsync();
             return RedirectToAction("GetAllUsers", "Manage");
         }
 

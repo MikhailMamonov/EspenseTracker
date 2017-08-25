@@ -85,3 +85,14 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\System.Diagnostics.DiagnosticSource.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.Migrations.AddedId.resources
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.csprojResolveAssemblyReference.cache
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.csproj.CoreCompileInputs.cache
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\nunit.framework.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.abstractions.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.assert.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.core.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.execution.desktop.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\nunit.framework.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.abstractions.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.assert.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.core.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.execution.desktop.xml
