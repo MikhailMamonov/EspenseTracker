@@ -25,6 +25,7 @@ namespace expenseTracker
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RoleBasedRazorViewEngine(new[] {"moderator", "admin", "user" }));
 
+
         }
     }
 }

@@ -24,6 +24,8 @@ namespace expenseTracker
             // Configure the sign in cookie
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
+                SlidingExpiration = true,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
                 LoginPath = new PathString("/Account/Login"),
                 Provider = new CookieAuthenticationProvider
