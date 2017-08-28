@@ -28,7 +28,7 @@ namespace expenseTracker.Controllers
             set => Session["UserId"] = value;
         }
         private readonly ApplicationDbContext _db;
-        private readonly UserManager<ApplicationUser> _manager;
+        private UserManager<ApplicationUser> _manager;
 
         public ExpenseController()
         {

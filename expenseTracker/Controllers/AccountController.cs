@@ -22,7 +22,7 @@ namespace expenseTracker.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager @object)
         {
             UserManager = userManager;
             SignInManager = signInManager;

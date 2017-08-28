@@ -13,9 +13,7 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\System.Web.Optimization.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\System.Web.Mvc.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Microsoft.AspNet.Identity.Core.dll
-C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Microsoft.AspNet.Identity.Owin.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Microsoft.Owin.Security.dll
-C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Microsoft.AspNet.Identity.EntityFramework.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Owin.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\System.Web.Http.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\EntityFramework.dll
@@ -87,3 +85,7 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\Microsoft.Net.Http.Headers.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\System.Text.Encodings.Web.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\dotMemory.Unit.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\dotMemory.Unit.xml

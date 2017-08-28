@@ -1,17 +1,24 @@
 ﻿using System.Collections.Generic;
+using System.Data.Entity;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using expenseTracker;
 using expenseTracker.Controllers;
 using expenseTracker.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Owin.Security;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 using HttpContext = System.Web.HttpContext;
+using HttpResponse = System.Web.HttpResponse;
 
 namespace expenseTrackerExpenseTests1.Controllers
 {
@@ -19,38 +26,61 @@ namespace expenseTrackerExpenseTests1.Controllers
     public class ExpenseControllerExpenseTests
     {
         // these are needed on every test
-        ExpenseController controller;
-     
-        [TestInitialize]
-        public void TestInitialize()
+        ExpenseController _controller;
+
+    
+
+
+
+    [TestMethod()]
+        public void ExpenseControllerIndexViewIsNotNullTest()
         {
-           controller = new ExpenseController();
+
+            ApplicationDbContext context = new ApplicationDbContext();
+            AppDbInitializer init = new AppDbInitializer();
+            init.InitializeDatabase(context);
+ 
+            _controller = new ExpenseController();
+            var controllerContext = new Mock<ControllerContext>();
+            var principal = new Moq.Mock<IPrincipal>();
+            principal.Setup(p => p.IsInRole("moderator")).Returns(true);
+            principal.SetupGet(x => x.Identity.Name).Returns("somemail@mail.ru");
+            principal.SetupGet(x => x.Identity.IsAuthenticated).Returns(true);
+            controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
            
+            _controller.ControllerContext = controllerContext.Object;
+            if (_controller.Index() is ViewResult result) Assert.IsNotNull(result);
+
         }
 
-        [TestMethod()]
-        public void ExpenseControllerIndexTest()
+        private static HttpContext CreateHttpContext(bool userLoggedIn)
         {
-            var userMock = new Mock<IPrincipal>();
-            userMock.Expect(p => p.IsInRole("admin")).Returns(true);
+            var httpContext = new HttpContext(
+                new System.Web.HttpRequest(string.Empty, "http://sample.com", string.Empty),
+                new HttpResponse(new StringWriter())
+            )
+            {
+                User = userLoggedIn
+                    ? new GenericPrincipal(new GenericIdentity("userName"), new string[0])
+                    : new GenericPrincipal(new GenericIdentity(string.Empty), new string[0])
+            };
 
-            var contextMock = new Mock<HttpContextBase>();
-            contextMock.ExpectGet(ctx => ctx.User)
-                .Returns(userMock.Object);
-
-            var controllerContextMock = new Mock<ControllerContext>();
-            controllerContextMock.ExpectGet(con => con.HttpContext)
-                .Returns(contextMock.Object);
-
-            controller.ControllerContext = controllerContextMock.Object;
-
-            if (controller.Index() is ViewResult result) Assert.IsNotNull(result);
+            return httpContext;
         }
+
 
         [TestMethod()]
         public void IndexIndexTest()
         {
-            Assert.Fail();
+            var controllerContext = new Mock<ControllerContext>();
+            var principal = new Moq.Mock<IPrincipal>();
+            principal.Setup(p => p.IsInRole("admin")).Returns(true);
+            principal.SetupGet(x => x.Identity.Name).Returns("m@mail.ru");
+            controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
+            _controller.ControllerContext = controllerContext.Object;
+            List<string> weeks = new List<string>(){"32"};
+            if (_controller.Index() is ViewResult result)
+            Assert.AreEqual(weeks, result.ViewBag.weeks);
         }
 
         [TestMethod()]
@@ -160,5 +190,7 @@ namespace expenseTrackerExpenseTests1.Controllers
         {
 Assert.Fail();
         }
+
+       
     }
 }
