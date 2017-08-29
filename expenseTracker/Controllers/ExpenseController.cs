@@ -42,6 +42,7 @@ namespace expenseTracker.Controllers
         {
             ViewBag.Date = new DateTime(2000, 12, 06);
             var currentUser = _manager.FindById(User.Identity.GetUserId());
+            var id = User.Identity.GetUserId();
             var currCulture = CultureInfo.CurrentCulture;
             var weeks = new List<string>();
             foreach (var expense in _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id)) {

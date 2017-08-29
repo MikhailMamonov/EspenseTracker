@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert;
 using HttpContext = System.Web.HttpContext;
 using HttpResponse = System.Web.HttpResponse;
 
@@ -39,13 +41,17 @@ namespace expenseTrackerExpenseTests1.Controllers
             ApplicationDbContext context = new ApplicationDbContext();
             AppDbInitializer init = new AppDbInitializer();
             init.InitializeDatabase(context);
- 
+            string username = "somemail@mail.ru";
             _controller = new ExpenseController();
+
             var controllerContext = new Mock<ControllerContext>();
+
+            var identity = new GenericIdentity(username, "ApplicationCookie");
+            var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, context.Users.First().Id);
+            identity.AddClaim(nameIdentifierClaim);
             var principal = new Moq.Mock<IPrincipal>();
-            principal.Setup(p => p.IsInRole("moderator")).Returns(true);
-            principal.SetupGet(x => x.Identity.Name).Returns("somemail@mail.ru");
-            principal.SetupGet(x => x.Identity.IsAuthenticated).Returns(true);
+            principal.Setup(x => x.Identity).Returns(identity);
+            principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
             controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
            
             _controller.ControllerContext = controllerContext.Object;
@@ -72,15 +78,30 @@ namespace expenseTrackerExpenseTests1.Controllers
         [TestMethod()]
         public void IndexIndexTest()
         {
+            ApplicationDbContext context = new ApplicationDbContext();
+            AppDbInitializer init = new AppDbInitializer();
+            init.InitializeDatabase(context);
+            Expense expense = new Expense();
+            expense.DateAndTime = new DateTime(2017, 08, 08);
+            expense.User = context.Users.First();
+            
+            string username = "somemail@mail.ru";
+            _controller = new ExpenseController();
+
             var controllerContext = new Mock<ControllerContext>();
+
+            var identity = new GenericIdentity(username, "ApplicationCookie");
+            var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, context.Users.First().Id);
+            identity.AddClaim(nameIdentifierClaim);
             var principal = new Moq.Mock<IPrincipal>();
-            principal.Setup(p => p.IsInRole("admin")).Returns(true);
-            principal.SetupGet(x => x.Identity.Name).Returns("m@mail.ru");
+            principal.Setup(x => x.Identity).Returns(identity);
+            principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
             controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
+
             _controller.ControllerContext = controllerContext.Object;
             List<string> weeks = new List<string>(){"32"};
             if (_controller.Index() is ViewResult result)
-            Assert.AreEqual(weeks, result.ViewBag.weeks);
+            CollectionAssert.AreEqual(weeks, result.ViewBag.weeks);
         }
 
         [TestMethod()]

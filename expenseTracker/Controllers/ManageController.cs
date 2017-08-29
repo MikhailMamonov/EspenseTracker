@@ -250,8 +250,7 @@ namespace expenseTracker.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             var user = await UserManager.FindByIdAsync(id);
-            user.UserName = formuser.UserName;
-            user.Age = formuser.Age;
+        
             if (ModelState.IsValid)
             {
                 //If user has existing Role then remove the user from the role
