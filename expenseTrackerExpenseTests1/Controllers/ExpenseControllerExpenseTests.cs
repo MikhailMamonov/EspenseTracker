@@ -30,17 +30,16 @@ namespace expenseTrackerExpenseTests1.Controllers
         // these are needed on every test
         ExpenseController _controller;
 
-    
-
-
-
-    [TestMethod()]
-        public void ExpenseControllerIndexViewIsNotNullTest()
+        [TestInitialize]
+        public void SetupContext()
         {
-
             ApplicationDbContext context = new ApplicationDbContext();
             AppDbInitializer init = new AppDbInitializer();
             init.InitializeDatabase(context);
+            Expense expense = new Expense();
+            expense.DateAndTime = new DateTime(2017, 08, 08);
+            expense.User = context.Users.First();
+
             string username = "somemail@mail.ru";
             _controller = new ExpenseController();
 
@@ -53,8 +52,16 @@ namespace expenseTrackerExpenseTests1.Controllers
             principal.Setup(x => x.Identity).Returns(identity);
             principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
             controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
-           
+
             _controller.ControllerContext = controllerContext.Object;
+        }
+
+
+        [TestMethod()]
+        public void ExpenseControllerIndexViewIsNotNullTest()
+        {
+
+           
             if (_controller.Index() is ViewResult result) Assert.IsNotNull(result);
 
         }
@@ -78,27 +85,7 @@ namespace expenseTrackerExpenseTests1.Controllers
         [TestMethod()]
         public void IndexIndexTest()
         {
-            ApplicationDbContext context = new ApplicationDbContext();
-            AppDbInitializer init = new AppDbInitializer();
-            init.InitializeDatabase(context);
-            Expense expense = new Expense();
-            expense.DateAndTime = new DateTime(2017, 08, 08);
-            expense.User = context.Users.First();
             
-            string username = "somemail@mail.ru";
-            _controller = new ExpenseController();
-
-            var controllerContext = new Mock<ControllerContext>();
-
-            var identity = new GenericIdentity(username, "ApplicationCookie");
-            var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, context.Users.First().Id);
-            identity.AddClaim(nameIdentifierClaim);
-            var principal = new Moq.Mock<IPrincipal>();
-            principal.Setup(x => x.Identity).Returns(identity);
-            principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
-            controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
-
-            _controller.ControllerContext = controllerContext.Object;
             List<string> weeks = new List<string>(){"32"};
             if (_controller.Index() is ViewResult result)
             CollectionAssert.AreEqual(weeks, result.ViewBag.weeks);
