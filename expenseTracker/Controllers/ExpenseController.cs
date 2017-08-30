@@ -69,10 +69,6 @@ namespace expenseTracker.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             IEnumerable<Expense> expenses = _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id);
-            if (expenses == null)
-            {
-                return HttpNotFound();
-            }
 
             UserId = id;
             return View(expenses);

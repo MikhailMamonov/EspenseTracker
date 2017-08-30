@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -30,15 +32,17 @@ namespace expenseTrackerExpenseTests1.Controllers
         // these are needed on every test
         ExpenseController _controller;
 
+        private ApplicationDbContext _context;
+
         [TestInitialize]
         public void SetupContext()
         {
-            ApplicationDbContext context = new ApplicationDbContext();
+            _context = new ApplicationDbContext();
             AppDbInitializer init = new AppDbInitializer();
-            init.InitializeDatabase(context);
+            init.InitializeDatabase(_context);
             Expense expense = new Expense();
             expense.DateAndTime = new DateTime(2017, 08, 08);
-            expense.User = context.Users.First();
+            expense.User = _context.Users.First();
 
             string username = "somemail@mail.ru";
             _controller = new ExpenseController();
@@ -46,44 +50,26 @@ namespace expenseTrackerExpenseTests1.Controllers
             var controllerContext = new Mock<ControllerContext>();
 
             var identity = new GenericIdentity(username, "ApplicationCookie");
-            var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, context.Users.First().Id);
+            var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, _context.Users.First().Id);
             identity.AddClaim(nameIdentifierClaim);
             var principal = new Moq.Mock<IPrincipal>();
             principal.Setup(x => x.Identity).Returns(identity);
             principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
             controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
+            controllerContext.SetupGet(x => x.HttpContext.Session["UserId"]).Returns(_context.Users.First().Id);
 
             _controller.ControllerContext = controllerContext.Object;
         }
 
 
         [TestMethod()]
-        public void ExpenseControllerIndexViewIsNotNullTest()
+        public void IndexViewIsNotNullTest()
         {
-
-           
             if (_controller.Index() is ViewResult result) Assert.IsNotNull(result);
-
         }
-
-        private static HttpContext CreateHttpContext(bool userLoggedIn)
-        {
-            var httpContext = new HttpContext(
-                new System.Web.HttpRequest(string.Empty, "http://sample.com", string.Empty),
-                new HttpResponse(new StringWriter())
-            )
-            {
-                User = userLoggedIn
-                    ? new GenericPrincipal(new GenericIdentity("userName"), new string[0])
-                    : new GenericPrincipal(new GenericIdentity(string.Empty), new string[0])
-            };
-
-            return httpContext;
-        }
-
 
         [TestMethod()]
-        public void IndexIndexTest()
+        public void IndexCorrectWeekNumberComputingTest()
         {
             
             List<string> weeks = new List<string>(){"32"};
@@ -92,33 +78,138 @@ namespace expenseTrackerExpenseTests1.Controllers
         }
 
         [TestMethod()]
-        public void UserRecordsIndexTest()
+        public void IndexCurrentUserIsCorrectTest()
         {
-            Assert.Fail();
+            if (_controller.Index() is ViewResult result)
+            {
+                var expenses =(IEnumerable<Expense>) result.ViewData.Model;
+                Assert.AreEqual(_context.Users.First().Id, expenses.ToList().First().User.Id);
+            }
+        }
+
+
+        [TestMethod()]
+        public void UserRecordsExpensesIsNotNullTest()
+        {
+            if (_controller.UserRecords(_context.Users.First().Id) is ViewResult result)
+            {
+                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
+                Assert.IsNotNull(expenses.ToList());
+            }
+        }
+
+
+        [TestMethod()]
+        public void UserRecordsCurrentUserIsCorrectTest()
+        {
+            if (_controller.UserRecords(_context.Users.First().Id) is ViewResult result)
+            {
+                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
+                Assert.AreEqual(_context.Users.First().Id, expenses.ToList().First().User.Id);
+            }
         }
 
         [TestMethod()]
-        public void CreateForUserIndexTest()
+        public void UserRecordsExpensesIsEqualCorrectTest()
         {
-            Assert.Fail();
+            IEnumerable<Expense> currentExpenses = _context.Expenses.ToList().Where(expense => expense.User.Id == _context.Users.First().Id);
+            if (_controller.UserRecords(_context.Users.First().Id) is ViewResult result)
+            {
+                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
+                Assert.AreEqual(currentExpenses.ToString(), expenses.ToString());
+            }
         }
 
         [TestMethod()]
-        public void CreateForUserIndexTest1()
+        public void CreateForUserResultIsNotNullTest()
         {
-            Assert.Fail();
+            _controller.UserRecords(_context.Users.First().Id);
+            Expense expense = new Expense();
+            expense.Id = 2;
+            expense.User = _context.Users.First();
+            expense.Amount = 56;
+            expense.Comment = "jhbjhb";
+            expense.Description = "hghjhj";
+            expense.DateAndTime = DateTime.MaxValue;
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.CreateForUser(expense) is Task<ActionResult> result)
+            {
+                Assert.IsNotNull(result);
+            }
+
         }
 
         [TestMethod()]
-        public void TotalAmountIndexTest()
+        public void CreateForUserModelIsValidTest()
         {
-            Assert.Fail();
+            _controller.UserRecords(_context.Users.First().Id);
+            Expense expense = new Expense();
+            expense.Id = 2;
+            expense.User = _context.Users.First();
+            expense.Amount = 56;
+            expense.Comment = "jhbjhb";
+            expense.Description = "hghjhj";
+            expense.DateAndTime = DateTime.MaxValue;
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.CreateForUser(expense) is Task<ActionResult> result)
+            {
+                var redirectResult =(RedirectToRouteResult)result.Result;
+                Assert.AreEqual("GetAllUsers", redirectResult.RouteValues.Values.ToList().First());
+            }
+
         }
 
         [TestMethod()]
-        public void TotalAmountIndexTest1()
+        public void CreateForUserExpenseCreatedInDbContextForCurrentUserTest()
         {
-            Assert.Fail();
+            _controller.UserRecords(_context.Users.First().Id);
+            Expense expense = new Expense();
+            expense.Id = 2;
+            expense.User = _context.Users.First();
+            expense.Amount = 56;
+            expense.Comment = "jhbjhb";
+            expense.Description = "hghjhj";
+            expense.DateAndTime = DateTime.MaxValue;
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.CreateForUser(expense) is Task<ActionResult> result)
+            {
+                var addedExpense = _context.Expenses.ToList().Last();
+                Assert.AreEqual(addedExpense.Id, expense.Id);
+                Assert.AreEqual(addedExpense.Amount, expense.Amount);
+                Assert.AreEqual(addedExpense.Comment, expense.Comment);
+                Assert.AreEqual(addedExpense.DateAndTime.ToString(CultureInfo.InvariantCulture), expense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+                Assert.AreEqual(addedExpense.Description, expense.Description);
+                Assert.AreEqual(addedExpense.User.Id, expense.User.Id);
+            }
+
+        }
+
+
+        [TestMethod()]
+        public void TotalAmountViewIsNotNullTest()
+        {
+            if (_controller.TotalAmount("32") is ViewResult result)
+                Assert.IsNotNull(result);
+        }
+
+        [TestMethod()]
+        public void TotalAmountCheckTotalAmountAndAverageDayTest()
+        {
+            int totalAmount = 0;
+            var expenses = _context.Expenses.ToList().Where(expense => expense.User.Id == _context.Users.First().Id);
+            foreach (var i in expenses)
+            {
+                DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(i.DateAndTime);
+                if (CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(i.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) == Int32.Parse("32"))
+                {
+                    totalAmount += i.Amount;
+                }
+            }
+
+            if (_controller.TotalAmount("32") is ViewResult result) { 
+                Assert.AreEqual(totalAmount.ToString(), result.ViewBag.totalAmount);
+                Assert.AreEqual(result.ViewBag.averageDay, (totalAmount / 7).ToString());
+            }
         }
 
         [TestMethod()]
