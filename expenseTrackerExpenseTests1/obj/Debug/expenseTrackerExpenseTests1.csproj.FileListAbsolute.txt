@@ -91,3 +91,5 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\dotMemory.Unit.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\NSubstitute.dll
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\NSubstitute.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\NLog.dll
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTrackerExpenseTests1\bin\Debug\NLog.xml

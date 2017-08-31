@@ -18,8 +18,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Owin.Security;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using NLog.Common;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using AsyncHelpers = expenseTracker.Models.AsyncHelpers;
 using CollectionAssert = Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert;
 using HttpContext = System.Web.HttpContext;
 using HttpResponse = System.Web.HttpResponse;
@@ -110,15 +112,38 @@ namespace expenseTrackerExpenseTests1.Controllers
         }
 
         [TestMethod()]
-        public void UserRecordsExpensesIsEqualCorrectTest()
+        public void UserRecordsExpensesIsEqualCorrectDataTest()
         {
-            IEnumerable<Expense> currentExpenses = _context.Expenses.ToList().Where(expense => expense.User.Id == _context.Users.First().Id);
+            var currentUser = _context.Users.First();
+            List<Expense> currentExpenses = new List<Expense>();
+            Expense expense = new Expense();
+            expense.DateAndTime = new DateTime(2017, 08, 08);
+            expense.User = currentUser;
+            expense.Id = 1;
+            expense.Amount = 23;
+            expense.Comment = "jhbhj";
+            expense.Description = "jhbjhbj";
+            currentExpenses.Add(expense);
             if (_controller.UserRecords(_context.Users.First().Id) is ViewResult result)
             {
-                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
-                Assert.AreEqual(currentExpenses.ToString(), expenses.ToString());
+                var expenses = (IEnumerable<Expense>) result.ViewData.Model;
+                var enumerable = expenses as IList<Expense> ?? expenses.ToList();
+                Assert.AreEqual(enumerable.ToList().Count, currentExpenses.Count);
+                foreach (var exp in enumerable)
+                {
+
+                    Assert.AreEqual(currentExpenses.First().Id, exp.Id);
+                    Assert.AreEqual(currentExpenses.First().Amount, exp.Amount);
+                    Assert.AreEqual(currentExpenses.First().Comment, exp.Comment);
+                    Assert.AreEqual(currentExpenses.First().DateAndTime.ToString(CultureInfo.InvariantCulture),
+                        exp.DateAndTime.ToString(CultureInfo.InvariantCulture));
+                    Assert.AreEqual(currentExpenses.First().Description, exp.Description);
+                    Assert.AreEqual(currentExpenses.First().User.Id, exp.User.Id);
+                }
             }
         }
+
+
 
         [TestMethod()]
         public void CreateForUserResultIsNotNullTest()
@@ -195,16 +220,8 @@ namespace expenseTrackerExpenseTests1.Controllers
         [TestMethod()]
         public void TotalAmountCheckTotalAmountAndAverageDayTest()
         {
-            int totalAmount = 0;
-            var expenses = _context.Expenses.ToList().Where(expense => expense.User.Id == _context.Users.First().Id);
-            foreach (var i in expenses)
-            {
-                DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(i.DateAndTime);
-                if (CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(i.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) == Int32.Parse("32"))
-                {
-                    totalAmount += i.Amount;
-                }
-            }
+            int totalAmount = 23;
+            
 
             if (_controller.TotalAmount("32") is ViewResult result) { 
                 Assert.AreEqual(totalAmount.ToString(), result.ViewBag.totalAmount);
@@ -213,83 +230,294 @@ namespace expenseTrackerExpenseTests1.Controllers
         }
 
         [TestMethod()]
-        public void DateFilterIndexTest()
+        public void TotalAmountCheckTotalAmountAndAverageDayOfEmptylistOfRecordTest()
         {
-            Assert.Fail();
+            int totalAmount = 0;
+
+
+            if (_controller.TotalAmount("34") is ViewResult result)
+            {
+                Assert.AreEqual(totalAmount.ToString(), result.ViewBag.totalAmount);
+                Assert.AreEqual(result.ViewBag.averageDay, (totalAmount / 7).ToString());
+            }
+        }
+
+
+        [TestMethod()]
+        public void DateFilterNonSpacingInIntervaltTest()
+        {
+            var startDate = new DateTime(2000,12,06);
+            var finishDate =  new DateTime(2001, 12, 06);
+            if (_controller.DateFilter(startDate,finishDate) is ViewResult result)
+            {
+                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
+                Assert.AreEqual(0,expenses.ToList().Count);
+            }
         }
 
         [TestMethod()]
-        public void CreateIndexTest()
+        public void DateFilterSpacingInIntervaltTest()
         {
-            Assert.Fail();
+            var startDate = new DateTime(2017, 07, 08);
+            var finishDate = new DateTime(2017, 08, 09);
+            if (_controller.DateFilter(startDate, finishDate) is ViewResult result)
+            {
+                var expenses = (IEnumerable<Expense>)result.ViewData.Model;
+                Assert.AreEqual(1, expenses.ToList().Count);
+
+            }
         }
 
         [TestMethod()]
-        public void CreateIndexTest1()
+        public void CreateViewIsNotNullTest()
         {
-            Assert.Fail();
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.Create(new Expense()) is Task<ActionResult> result)
+            {
+                Assert.IsNotNull(result);
+            }
         }
 
         [TestMethod()]
-        public void UpdateIndexTest()
+        public void CreateModelIsValidTest()
         {
-            Assert.Fail();
+            Expense expense = new Expense();
+            expense.Id = 2;
+            expense.User = _context.Users.First();
+            expense.Amount = 56;
+            expense.Comment = "jhbjhb";
+            expense.Description = "hghjhj";
+            expense.DateAndTime = DateTime.MaxValue;
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.Create(expense) is Task<ActionResult> result)
+            {
+                var redirectResult = (RedirectToRouteResult)result.Result;
+                Assert.AreEqual("Index", redirectResult.RouteValues.Values.ToList().First());
+            }
+
         }
 
         [TestMethod()]
-        public void UpdateIndexTest1()
+        public void CreateModelIsNotValidTest()
         {
-            Assert.Fail();
+            var testExpense = new Expense(); 
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.Create(testExpense) is Task<ActionResult> result)
+            {
+                Assert.IsFalse(result.IsCompleted);  
+            }
+
+        }
+
+
+
+        [TestMethod()]
+        public void CreateExpenseCreatedInDbContextForCurrentUserTest()
+        {
+            Expense expense = new Expense();
+            expense.Id = 2;
+            expense.User = _context.Users.First();
+            expense.Amount = 56;
+            expense.Comment = "jhbjhb";
+            expense.Description = "hghjhj";
+            expense.DateAndTime = DateTime.MaxValue;
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.Create(expense) is Task<ActionResult> result)
+            {
+                var addedExpense = _context.Expenses.Find(2);
+                Assert.AreEqual(addedExpense.Id, expense.Id);
+                Assert.AreEqual(addedExpense.Amount, expense.Amount);
+                Assert.AreEqual(addedExpense.Comment, expense.Comment);
+                Assert.AreEqual(addedExpense.DateAndTime.ToString(CultureInfo.InvariantCulture), expense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+                Assert.AreEqual(addedExpense.Description, expense.Description);
+                Assert.AreEqual(addedExpense.User.Id, expense.User.Id);
+            }
+
         }
 
         [TestMethod()]
-        public void UpdateForUserIndexTest()
+        public void UpdateViewIsNotNullTest()
         {
-            Assert.Fail();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.Update(1)) is ViewResult result)
+            {
+                var expense = (Expense)result.ViewData.Model;
+                Assert.IsNotNull(expense);
+            }
         }
 
         [TestMethod()]
-        public void UpdateForUserIndexTest1()
+        public void UpdateViewGettingExpenseCorrectTest()
         {
-            Assert.Fail();
+            
+            // ReSharper disable once PatternAlwaysOfType
+            if( AsyncHelpers.RunSync<ActionResult>(() => _controller.Update(1))  is ViewResult result)
+            {
+                Expense testExpense = new Expense();
+                testExpense.DateAndTime = new DateTime(2017, 08, 08);
+                testExpense.User = _context.Users.First();
+                testExpense.Id = 1;
+                testExpense.Amount = 23;
+                testExpense.Comment = "jhbhj";
+                testExpense.Description = "jhbjhbj";
+                var expense = (Expense)result.ViewData.Model;
+                Assert.IsNotNull(expense);
+                Assert.AreEqual(expense.Id,testExpense.Id);
+                Assert.AreEqual(expense.Amount, testExpense.Amount);
+                Assert.AreEqual(expense.Comment, testExpense.Comment);
+                Assert.AreEqual(expense.Description, testExpense.Description);
+                Assert.AreEqual(expense.User.Id, testExpense.User.Id);
+                Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture),
+                    testExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        //[TestMethod()]
+        //public void UpdateViewSettingExpenseCorrectTest()
+        //{
+
+        //    Expense testExpense = new Expense();
+        //    testExpense.DateAndTime = new DateTime(2018, 08, 08);
+        //    testExpense.User = _context.Users.First();
+        //    testExpense.Id = 1;
+        //    testExpense.Amount = 500;
+        //    testExpense.Comment = "hgvhg";
+        //    testExpense.Description = "bvhbhb";
+
+           
+        //    // ReSharper disable once PatternAlwaysOfType
+        //        if (_controller.Update(testExpense) is Task<ActionResult> result)
+        //        {
+
+        //            var expense = _context.Expenses.First();
+        //            Assert.AreEqual(expense.Id, testExpense.Id);
+        //            Assert.AreEqual(expense.Amount, testExpense.Amount);
+        //            Assert.AreEqual(expense.Comment, testExpense.Comment);
+        //            Assert.AreEqual(expense.Description, testExpense.Description);
+        //            Assert.AreEqual(expense.User.Id, testExpense.User.Id);
+        //            Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture),
+        //                testExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));                
+        //    }
+        //}
+
+        
+        [TestMethod()]
+        public void DetailsCorrectTest()
+        {
+            var testExpense = _context.Expenses.First();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.Details(1)) is ViewResult result)
+            {
+                var expense = (Expense)result.ViewData.Model;
+                Assert.AreEqual(expense.Id,testExpense.Id);
+                Assert.AreEqual(expense.Amount, testExpense.Amount);
+                Assert.AreEqual(expense.Comment, testExpense.Comment);
+                Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture), testExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+                Assert.AreEqual(expense.User.Id, testExpense.User.Id);
+            }
         }
 
         [TestMethod()]
-        public void DetailsIndexTest()
+        public void DetailsForUserCorrectTest()
         {
-            Assert.Fail();
+            var testExpense = _context.Expenses.First();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.DetailsForUser(1)) is ViewResult result)
+            {
+                var expense = (Expense)result.ViewData.Model;
+                Assert.AreEqual(expense.Id, testExpense.Id);
+                Assert.AreEqual(expense.Amount, testExpense.Amount);
+                Assert.AreEqual(expense.Comment, testExpense.Comment);
+                Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture), testExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+                Assert.AreEqual(expense.User.Id, testExpense.User.Id);
+            }
         }
 
         [TestMethod()]
-        public void DetailsForUserIndexTest()
+        public void DeleteGetCorrectExpenseTest()
         {
-            Assert.Fail();
+            var actualExpense = _context.Expenses.First();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.Delete(1)) is ViewResult result)
+            {
+                var expense = (Expense)result.ViewData.Model;
+                Assert.IsNotNull(expense);
+                Assert.AreEqual(expense.Id,actualExpense.Id);
+                Assert.AreEqual(expense.Amount, actualExpense.Amount);
+                Assert.AreEqual(expense.Comment, actualExpense.Comment);
+                Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture), actualExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+            }
+
+           
         }
 
         [TestMethod()]
-        public void DeleteIndexTest()
+        public void DeleteConfirmedRedirectedSuccessTest()
         {
-            Assert.Fail();
+
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.DeleteConfirmed(1) is Task<ActionResult> result)
+            {
+                var redirectResult = (RedirectToRouteResult)result.Result;
+                Assert.AreEqual("Index", redirectResult.RouteValues.Values.ToList().First());
+            }
+        }
+
+
+
+        [TestMethod()]
+        public void DeleteConfirmedDeleteSuccessTest()
+        {
+            
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.DeleteConfirmed(1)) is ViewResult result)
+            {
+                var expense = _context.Expenses.Find(1);
+                Assert.IsNull(expense);
+            }
         }
 
         [TestMethod()]
-        public void DeleteConfirmedIndexTest()
+        public void DeleteForUserGetCorrectExpenseTest()
         {
-            Assert.Fail();
+            var actualExpense = _context.Expenses.First();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.DeleteForUser(1)) is ViewResult result)
+            {
+                var expense = (Expense)result.ViewData.Model;
+                Assert.IsNotNull(expense);
+                Assert.AreEqual(expense.Id, actualExpense.Id);
+                Assert.AreEqual(expense.Amount, actualExpense.Amount);
+                Assert.AreEqual(expense.Comment, actualExpense.Comment);
+                Assert.AreEqual(expense.DateAndTime.ToString(CultureInfo.InvariantCulture), actualExpense.DateAndTime.ToString(CultureInfo.InvariantCulture));
+            }
+
+
+
         }
 
         [TestMethod()]
-        public void DeleteForUserIndexTest()
+        public void DeleteConfirmedForUserRedirectedSuccessTest()
         {
-            Assert.Fail();
+            // ReSharper disable once PatternAlwaysOfType
+            if (_controller.DeleteConfirmed(1) is Task<ActionResult> result)
+            {
+                var redirectResult = (RedirectToRouteResult)result.Result;
+                Assert.AreEqual("Index", redirectResult.RouteValues.Values.ToList().First());
+            }
         }
 
         [TestMethod()]
-        public void DeleteConfirmedForUserIndexTest()
+        public void DeleteConfirmedForUserDeleteddSuccessTest()
         {
-Assert.Fail();
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync<ActionResult>(() => _controller.DeleteConfirmed(1)) is ViewResult result)
+            {
+                var expense = _context.Expenses.Find(1);
+                Assert.IsNull(expense);
+            }
         }
 
-       
+
     }
 }
