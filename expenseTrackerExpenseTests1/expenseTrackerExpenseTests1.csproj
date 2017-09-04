@@ -209,6 +209,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Controllers\AccountControllerExpenseTests.cs" />
     <Compile Include="Controllers\ExpenseControllerExpenseTests.cs" />
     <Compile Include="Controllers\ManageControllerExpenseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

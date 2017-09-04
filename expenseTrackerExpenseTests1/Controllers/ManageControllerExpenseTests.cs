@@ -188,33 +188,52 @@ namespace expenseTracker.Controllers.ExpenseTests
         }
 
         [TestMethod()]
-        public void GetAllUsersIndexTest()
+        public void EditGetDataIsCorrectTest()
         {
-            Assert.Fail();
+
+            // ReSharper disable once PatternAlwaysOfType
+            if (AsyncHelpers.RunSync(() => _controller.Edit(_context.Users.Local.ToList().First().Id)) is ViewResult result)
+            {
+                var rolesForDelete = new List<SelectListItem>()
+                {
+                    new SelectListItem {Value = "admin", Text = "admin"},
+                    new SelectListItem {Value = "moderator", Text = "moderator"},
+                    new SelectListItem {Value = "user", Text = "user"}
+                };
+                var gettingRoles = (List<SelectListItem>)result.ViewBag.RolesForDelete;
+                Assert.IsNotNull(gettingRoles);
+                Assert.AreEqual(rolesForDelete.Count, gettingRoles.Count);
+                var roles = new List<string>();
+
+                foreach (var roleItem in rolesForDelete)
+                {
+                    roles.Add(roleItem.Text);
+                }
+
+                foreach (var gettingRole in gettingRoles)
+                {
+                    Assert.IsTrue(roles.Contains(gettingRole.Text));
+                    if (gettingRole.Value != null) Assert.IsTrue(roles.Contains(gettingRole.Text));
+                }
+            }
         }
 
         [TestMethod()]
-        public void CreateUserIndexTest()
+        public void EditDataEditedSuccessTest1()
         {
-            Assert.Fail();
-        }
 
-        [TestMethod()]
-        public void CreateUserIndexTest1()
-        {
-            Assert.Fail();
-        }
+        
+            var testUser = new ApplicationUser { Email = "mail@mail.ru", UserName = "mail@mail.ru" };
+            var oldUser = _context.Users.ToList().First();
 
-        [TestMethod()]
-        public void EditIndexTest()
-        {
-            Assert.Fail();
-        }
+            if (AsyncHelpers.RunSync(() => _controller.Edit(testUser,_context.Users.Local.ToList().First().Id,"")) is ViewResult
+                result)
+            {
+                var newUser = (ApplicationUser)result.ViewData.Model;
+                Assert.AreNotEqual(newUser.Age,oldUser.Age);
+                Assert.AreNotEqual(newUser.Email,oldUser.Email);
+            }
 
-        [TestMethod()]
-        public void EditIndexTest1()
-        {
-            Assert.Fail();
         }
 
         [TestMethod()]
@@ -245,123 +264,90 @@ namespace expenseTracker.Controllers.ExpenseTests
         }
 
         [TestMethod()]
-        public void DeleteUserIndexTest()
+        public void DeleteUserNotNullTest()
         {
-            Assert.Fail();
+            var testUser = _context.Users.Local.ToList().First();
+            if (AsyncHelpers.RunSync(() => _controller.DeleteUser(_context.Users.Local.ToList().First().Id)) is ViewResult
+                result)
+            {
+                var user = (ApplicationUser)result.ViewData.Model;
+                Assert.IsNotNull(result);
+            }
         }
 
         [TestMethod()]
-        public void DeleteConfirmedUserIndexTest()
+        public void DeleteUserDataIsCorrectTest()
         {
-            Assert.Fail();
+            var testUser = _context.Users.Local.ToList().First();
+            if (AsyncHelpers.RunSync(() => _controller.DeleteUser(_context.Users.Local.ToList().First().Id)) is ViewResult
+                result)
+            {
+                var user = (ApplicationUser)result.ViewData.Model;
+                Assert.AreEqual(user.Age, testUser.Age);
+                Assert.AreEqual(user.Email, testUser.Email);
+                Assert.AreEqual(user.EmailConfirmed, testUser.EmailConfirmed);
+                Assert.AreEqual(user.UserName, testUser.UserName);
+            }
         }
 
         [TestMethod()]
-        public void RoleAddToUserIndexTest()
+        public void DeleteConfirmedUsersIsEqualsTest()
         {
-            Assert.Fail();
+            var testUser = _context.Users.Local.ToList().First();
+            if (AsyncHelpers.RunSync(task: () => _controller.DeleteConfirmedUser(_context.Users.Local.ToList().First(),_context.Users.Local.ToList().First().Id,"")) is ViewResult
+                result)
+            {
+                var user = (ApplicationUser)result.ViewData.Model;
+                Assert.AreEqual(user.Age, testUser.Age);
+                Assert.AreEqual(user.Email, testUser.Email);
+                Assert.AreEqual(user.EmailConfirmed, testUser.EmailConfirmed);
+                Assert.AreEqual(user.UserName, testUser.UserName);
+            }
+        }
+
+        [TestMethod()]
+        public void DeleteConfirmedUserSuccessTest()
+        {
+            var testUser = _context.Users.Local.ToList().First();
+            if (AsyncHelpers.RunSync(task: () => _controller.DeleteConfirmedUser(_context.Users.Local.ToList().First(), _context.Users.Local.ToList().First().Id, "")) is ViewResult
+                result)
+            {
+                Assert.AreEqual(_context.Users.Local.Count, 0);
+            }
+        }
+
+        [TestMethod()]
+        public async Task RoleAddToUserIndexTest()
+        {
+            var viewModel = new RegisterViewModel();
+            viewModel.Age = 50;
+            viewModel.Email = "m@mail.ru";
+            viewModel.Password = "mM2010_";
+            viewModel.ConfirmPassword = "mM2010_";
+
+            // ReSharper disable once PatternAlwaysOfType
+            await _controller.CreateUser(viewModel, "admin");
+            
+           
+
+            if (_controller.RoleAddToUser("", "user", _context.Users.Local.ToList().First(), "") is ViewResult result)
+                {
+                IList<string> roleNames = UserManager.GetRoles(_context.Users.ToList().First().Id);
+                Assert.IsTrue(roleNames.Contains("user"));
+            }
         }
 
         [TestMethod()]
         public void DeleteRoleForUserIndexTest()
         {
-            Assert.Fail();
+            if (_controller.DeleteRoleForUser("","admin",_context.Users.Local.ToList().First()) is ViewResult result)
+            {
+                IList<string> roleNames = UserManager.GetRoles(_context.Users.ToList().First().Id);
+                Assert.IsFalse(roleNames.Contains("admin"));
+            }
         }
 
-        [TestMethod()]
-        public void IndexIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void RemoveLoginIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void AddPhoneNumberIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void AddPhoneNumberIndexTest1()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void EnableTwoFactorAuthenticationIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void DisableTwoFactorAuthenticationIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void VerifyPhoneNumberIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void VerifyPhoneNumberIndexTest1()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void RemovePhoneNumberIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void ChangePasswordIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void ChangePasswordIndexTest1()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void SetPasswordIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void SetPasswordIndexTest1()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void ManageLoginsIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void LinkLoginIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void LinkLoginCallbackIndexTest()
-        {
-            Assert.Fail();
-        }
+     
+       
     }
 }

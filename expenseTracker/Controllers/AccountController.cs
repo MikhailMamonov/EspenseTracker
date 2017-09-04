@@ -134,7 +134,7 @@ namespace expenseTracker.Controllers
             }
         }
 
-        //
+        //!!
         // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
@@ -142,7 +142,7 @@ namespace expenseTracker.Controllers
             return View();
         }
 
-        //
+        //!!
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
