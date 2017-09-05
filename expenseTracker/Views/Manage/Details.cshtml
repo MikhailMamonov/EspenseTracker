@@ -22,9 +22,23 @@
         <dd>
             @Html.DisplayFor(model => model.Age)
         </dd>
+        <dd>
+            @Html.DisplayFor(model => model.Roles)
+        </dd>
     </dl>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Home", "Index", "Home")
-</p>
+@if (Request.IsAuthenticated && (User.IsInRole("moderator")|| User.IsInRole("admin")))
+{
+    <p>
+        @Html.ActionLink("Edit", "Edit", new {id = Model.Id}) |
+        @Html.ActionLink("Back to list", "GetAllUsers")
+    </p>
+}
+
+@if (Request.IsAuthenticated && User.IsInRole("user") && !User.IsInRole("moderator") && !User.IsInRole("admin"))
+{
+    <p>
+        @Html.ActionLink("Edit", "Edit", new {id = Model.Id}) |
+        @Html.ActionLink("Home", "Index", "Home")
+    </p>
+}

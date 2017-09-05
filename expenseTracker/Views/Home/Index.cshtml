@@ -4,10 +4,40 @@
     ViewBag.Title = "Home Page";
 }
 
+
+
+@if (Request.IsAuthenticated && User.IsInRole("user") && !User.IsInRole("admin") && !User.IsInRole("moderator"))
+{
+    <div class="text-center">
+        <h3>Hello! User, Go to record your expenses with me.</h3>
+        <br />
+    </div>
+}
+
+@if (Request.IsAuthenticated && User.IsInRole("admin") && !User.IsInRole("moderator"))
+{
+    <div class="text-center">
+        <h3>Hello! Admin, Go to record your expenses with me.</h3>
+        <br />
+    </div>
+}
+
+@if (Request.IsAuthenticated && User.IsInRole("moderator"))
+{
+    <div class="text-center">
+        <h3>Hello! Moderator, Go to record your expenses with me.</h3>
+        <br />
+    </div>
+}
+
+@if (!Request.IsAuthenticated)
+{
     <div class="text-center">
         <h3>Hello! Go to record your expenses with me.</h3>
         <br />
     </div>
+}
+
 
 <table class="table">
     @foreach (var item in Model)

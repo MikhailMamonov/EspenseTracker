@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using expenseTracker;
@@ -37,27 +39,43 @@ namespace expenseTrackerExpenseTests1.Controllers
             init.InitializeDatabase(_context);
             string username = "somemail@mail.ru";
 
-           
-            var controllerContext = new Mock<ControllerContext>();
+
+            UserManager = new ApplicationUserManager(new UserStore<ApplicationUser>(_context));
+            _controller = new AccountController(UserManager, null, null);
+
+
+
+            Mock<HttpContextBase> mockHttpContext = new Mock<HttpContextBase>();
+            Mock<HttpRequestBase> mockHttpRequest = new Mock<HttpRequestBase>();
+            Uri uri = new Uri("http://www.mytestsite.com/MyAccount/TrackOrder.aspx");
+
+            mockHttpRequest.Setup(x => x.Url).Returns(uri);
+            mockHttpContext.Setup(x => x.Request).Returns(mockHttpRequest.Object);
+
+
+            var controllerContext = new Mock<ControllerContext>(mockHttpContext.Object, new RouteData(),_controller);
 
             var identity = new GenericIdentity(username, "ApplicationCookie");
             var nameIdentifierClaim = new Claim(ClaimTypes.NameIdentifier, _context.Users.First().Id);
             identity.AddClaim(nameIdentifierClaim);
             var principal = new Moq.Mock<IPrincipal>();
             principal.Setup(x => x.Identity).Returns(identity);
+
+          
+            
             principal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
+            controllerContext.SetupGet(x => x.HttpContext).Returns(mockHttpContext.Object);
             controllerContext.SetupGet(x => x.HttpContext.User).Returns(principal.Object);
             controllerContext.SetupGet(x => x.HttpContext.Session["UserId"]).Returns(_context.Users.First().Id);
 
-            UserManager = new ApplicationUserManager(new UserStore<ApplicationUser>(_context));
-            
+           
 
 
 
             //            IdentityFactoryOptions<ApplicationUserManager> mockOptions = new Mock<IdentityFactoryOptions<ApplicationUserManager>>().Object;
             //            var mockOwiinContext = new Mock<OwinContext>();
             //            var fakeUserManager = new Mock<ApplicationUserManager>(ApplicationUserManager.Create(mockOptions, mockOwiinContext));
-            _controller = new AccountController(UserManager, null, null);
+
 
             _controller.ControllerContext = controllerContext.Object;
         }

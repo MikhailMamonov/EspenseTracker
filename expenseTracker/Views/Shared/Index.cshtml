@@ -3,32 +3,110 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>@ViewBag.Title - My ASP.NET Application</title>
     @Styles.Render("~/Content/css")
 
     @Scripts.Render("~/bundles/modernizr")
-    <style>
-        .logo-status {
-            height: 100px;
-            margin-top: 20px;
-        }
-    </style>
+
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                </ul>
-                @Html.Partial("_LoginPartial")
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="row">
+                @if (Request.IsAuthenticated && User.IsInRole("admin") && !User.IsInRole("moderator"))
+                {
+
+                    <div class="navbar-header col-md-2">
+                        <div class="col-md-1 logo-status">
+                            <span class="glyphicon glyphicon-star" style="font-size: 1.5em; margin-left: 20px; color: slategrey;" aria-hidden="true"></span>Administrator
+                        </div>
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse col-md-5">
+                        <ul class="nav navbar-nav nav-pills">
+
+                            <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                            <li>@Html.ActionLink("My Profile", "Profile", "Home")</li>
+                            <li>@Html.ActionLink("Expense", "Index", "Expense")</li>
+                            <li>@Html.ActionLink("All Users", "GetAllUsers", "Manage")</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-2"></div>
+                    <div class="col-md-4">
+                        @Html.Partial("_LoginPartial")
+                    </div>
+                }
+
+                @if (Request.IsAuthenticated && User.IsInRole("moderator"))
+            {
+                    <div class="navbar-header col-md-2">
+                        <div class="col-md-1 logo-status"><span class="glyphicon glyphicon-star" style="font-size:1.5em; margin-left:20px; color:slategrey;" aria-hidden="true"></span>Moderator</div>
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse col-md-5">
+                        <ul class="nav navbar-nav nav-pills">
+
+                            <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                            <li>@Html.ActionLink("My Profile", "Profile", "Home")</li>
+                            <li>@Html.ActionLink("Expense", "Index", "Expense")</li>
+                            <li>@Html.ActionLink("All Users", "GetAllUsers", "Manage")</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-2"></div>
+                    <div class="col-md-4">
+                        @Html.Partial("_LoginPartial")
+                    </div>
+                }
+
+                @if (Request.IsAuthenticated && User.IsInRole("user") && !User.IsInRole("admin") && !User.IsInRole("moderator"))
+            {
+                <div class="navbar-header col-md-2">
+                    <div class="col-md-1 logo-status"><span class="glyphicon glyphicon-user" style="font-size:1.2em; margin-left:20px; margin-top: 8px; color:slategrey;" aria-hidden="true"></span><p style="margin-left: 13px;">User</p></div>
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div class="navbar-collapse collapse  col-md-5">
+                    <ul class="nav navbar-nav nav-pills">
+                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                        <li>@Html.ActionLink("My Profile", "Profile", "Home")</li>
+                        <li>@Html.ActionLink("Expense", "Index", "Expense")</li>
+                    </ul>
+                </div>
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    @Html.Partial("_LoginPartial")
+                </div>
+                }
+
+                @if (!Request.IsAuthenticated)
+            {
+                    <div class="navbar-header col-md-2 ">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse col-md-5">
+                        <ul class="nav navbar-nav">
+                            <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                        </ul>
+                         @Html.Partial("_LoginPartial")
+                    </div>
+                }
+
             </div>
         </div>
     </div>
