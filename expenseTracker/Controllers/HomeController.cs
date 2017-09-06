@@ -54,30 +54,11 @@ namespace expenseTracker.Controllers
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
             // Recover the profile information about the logged in user
-            ViewBag.HomeTown = currentUser.UserName;
-            ViewBag.FirstName = currentUser.Age;
-            ViewBag.Expenses = currentUser.Expenses;
-            return View();
+           
+            return View(currentUser);
 
         }
 
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
-
-        public async Task<ActionResult> Create([Bind(Include = "ExpenseId,Description,Comment,Amount,DateAndTime")] Expense expense)
-        {
-            var currentUser = await manager.FindByIdAsync(User.Identity.GetUserId());
-            if (ModelState.IsValid) {
-                expense.User = currentUser;
-                db.Expenses.Add(expense);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(expense);
-        }
+        
     }
 }

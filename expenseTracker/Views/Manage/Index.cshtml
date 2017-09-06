@@ -23,6 +23,16 @@
             }
             ]
         </dd>
+        <dt>UserName:</dt>
+        <dd>
+            @Model.UserName [
+            @Html.ActionLink("Manage", "ChangeUserName") ]
+        </dd>
+        <dt>Age:</dt>
+        <dd>
+            @Model.Age [
+            @Html.ActionLink("Manage", "ChangeAge") ]
+        </dd>
         <dt>External Logins:</dt>
         <dd>
             @Model.Logins.Count [

@@ -1,16 +1,57 @@
-﻿    ViewBag.Title = "Home Page";
+﻿@model expenseTracker.Models.ApplicationUser
+
+@{
+    ViewBag.Title = "Profile";
 }
+
 <div class="text-center">
-<h3>
-    My Profile information is as following:
-</h3>
-<p>
-    HomeTown = @ViewBag.HomeTown
-</p><p>
-    FirstName = @ViewBag.FirstName
-</p>
-<p>Expenses = @ViewBag.Expenses</p>
-</div>      
+
+        <h3>
+            My Profile information is as following:
+        </h3>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.UserName)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.UserName)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Age)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Age)
+            </dd>
+            <dt>
+              Expenses
+            </dt>
+            <dd>
+                
+                
+                    <div class="container">
+                        @foreach (var item in Model.Expenses)
+                        {
+                            <div class="row">
+                            <div class="col-sm-1">
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </div>
+                            <div class="col-sm-1">
+                                    @Html.DisplayFor(modelItem => item.Comment)
+                                </div>
+                            <div class="col-sm-1">
+                                    @Html.DisplayFor(modelItem => item.Amount)
+                                </div>
+                            <div class="col-sm-2">
+                                    @Html.DisplayFor(modelItem => item.DateAndTime)
+                                </div>
+                            </div>
+                        }
+                    </div>
+               
+            </dd>
+        </dl>
+    </div>
 
 <div class="btn">
     @Html.ActionLink("Go to Home", "Index")

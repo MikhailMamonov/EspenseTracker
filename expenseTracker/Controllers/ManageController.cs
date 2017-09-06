@@ -70,7 +70,9 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "admin,moderator")]
         public async Task<ActionResult> GetAllUsers()
         {
-            return View(await UserManager.Users.ToListAsync());
+            var currentUser = UserManager.FindById(User.Identity.GetUserId());
+            var users = UserManager.Users.ToList().Where(user => user.Id != currentUser.Id);
+            return View(users);
         }
 
         public ApplicationUserManager UserManager
@@ -92,6 +94,7 @@ namespace expenseTracker.Controllers
         {
             var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
             new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            list.First().Selected = true;
             ViewBag.Roles = list;
             return View();
         }
@@ -292,7 +295,14 @@ namespace expenseTracker.Controllers
             foreach (var role in list)
             {
                 if (!UserManager.IsInRole(user.Id, role.Value))
-                { roles.Add(role); }
+                {
+                    roles.Add(role);
+                    TempData["notice"] = "Role added to this user successfully !";
+                }
+                else
+                {
+                    TempData["notice"] = "User is in this role can not be added !";
+                }
             }
 
             ViewBag.Roles = roles;
@@ -311,8 +321,14 @@ namespace expenseTracker.Controllers
         public ActionResult DeleteRoleForUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser)
         {
             ApplicationUser user = UserManager.FindById(formuser.Id);
+            if (user.Roles.Count > 1) { 
                 UserManager.RemoveFromRole(user.Id, RoleName);
-                ViewBag.ResultMessage = "Role removed from this user successfully !";
+                TempData["notice"] = "Role removed from this user successfully !";
+            }
+            else
+            {
+                TempData["notice"] = "If user in one role role can not be removed !";
+            }
             // prepopulat roles for the view dropdown
             // prepopulat roles for the view dropdown
             var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
@@ -344,12 +360,16 @@ namespace expenseTracker.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+                : message == ManageMessageId.ChangeAgeSuccess ? "Your age was changed"
+                : message == ManageMessageId.ChangeUserNameSuccess ? "Your username was changed"
                 : "";
-
+            var currentUser = UserManager.FindById(User.Identity.GetUserId());
             var userId = User.Identity.GetUserId();
             var model = new IndexViewModel
             {
                 HasPassword = HasPassword(),
+                UserName = currentUser.Email,
+                Age = UserManager.FindById(userId).Age,
                 PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
                 TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await UserManager.GetLoginsAsync(userId),
@@ -559,6 +579,71 @@ namespace expenseTracker.Controllers
             return View(model);
         }
 
+
+        //
+        // GET: /Manage/ChangeAge
+        public ActionResult ChangeAge()
+        {
+            
+            return View();
+        }
+
+        //
+        // POST: /Manage/ChangeAge
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ChangeAge(ChangeAgeViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var currentUser = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    if (currentUser != null)
+                    {
+                        currentUser.Age = model.NewAge;
+                        await UserManager.UpdateAsync(currentUser);
+
+                }
+                    return RedirectToAction("Index", new { Message = ManageMessageId.ChangeAgeSuccess });
+                
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+
+        //
+        // GET: /Manage/ChangeAge
+        public ActionResult ChangeUserName()
+        {
+            var model = new ChangeUserNameViewModel() { OldEmail = UserManager.FindById(User.Identity.GetUserId()).Email };
+            return View(model);
+        }
+
+        //
+        // POST: /Manage/ChangeAge
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ChangeUserName(ChangeUserNameViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var currentUser = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                if (currentUser != null)
+                {
+                    currentUser.Email = model.NewEmail;
+                    currentUser.UserName = model.NewEmail;
+                    await UserManager.UpdateAsync(currentUser);
+
+                }
+                return RedirectToAction("Index", new { Message = ManageMessageId.ChangeAgeSuccess });
+
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
         //
         // GET: /Manage/ManageLogins
         public async Task<ActionResult> ManageLogins(ManageMessageId? message)
@@ -664,6 +749,8 @@ namespace expenseTracker.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
+            ChangeAgeSuccess,
+            ChangeUserNameSuccess,
             Error
         }
 

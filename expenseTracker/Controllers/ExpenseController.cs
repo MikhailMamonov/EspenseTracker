@@ -38,14 +38,23 @@ namespace expenseTracker.Controllers
 
         // GET: /Expense/
         // GET Expense for the logged in user
-        public ActionResult Index()
+        public ActionResult Index(List<Expense> expensesFiltered)
         {
+            var expenses = new List<Expense>();
             ViewBag.Date = new DateTime(2000, 12, 06);
             var currentUser = _manager.FindById(User.Identity.GetUserId());
+            if (expensesFiltered != null)
+                expenses = expensesFiltered;
+            else
+            {
+              expenses =  _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id).ToList();
+            }
+                
+           
             var id = User.Identity.GetUserId();
             var currCulture = CultureInfo.CurrentCulture;
             var weeks = new List<string>();
-            foreach (var expense in _db.Expenses.ToList().Where(expense => expense.User.Id == currentUser.Id)) {
+            foreach (var expense in expenses) {
                 DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(expense.DateAndTime);
                 // Return the week of our adjusted day
                 weeks.Add(CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(expense.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday).ToString());
@@ -157,7 +166,17 @@ namespace expenseTracker.Controllers
                     expensesForFilter.Add(expense);
                 }
             }
-                return View("Index",expensesForFilter);
+
+            var weeks = new List<string>();
+            foreach (var expense in expensesForFilter)
+            {
+                DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(expense.DateAndTime);
+                // Return the week of our adjusted day
+                weeks.Add(CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(expense.DateAndTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday).ToString());
+            }
+
+            ViewBag.weeks = weeks.Distinct().ToList();
+            return View("Index",expensesForFilter);
             
         }
 

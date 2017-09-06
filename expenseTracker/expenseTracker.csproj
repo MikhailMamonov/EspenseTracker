@@ -347,6 +347,8 @@
     <Content Include="Views\Manage\DeleteUser.cshtml" />
     <Content Include="Views\Expense\DeleteForUser.cshtml" />
     <Content Include="Views\Expense\TotalAmount.cshtml" />
+    <Content Include="Views\Manage\ChangeAge.cshtml" />
+    <Content Include="Views\Manage\ChangeUserName.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

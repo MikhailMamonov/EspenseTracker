@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -12,6 +13,8 @@ namespace expenseTracker.Models
         public string PhoneNumber { get; set; }
         public bool TwoFactor { get; set; }
         public bool BrowserRemembered { get; set; }
+        public int Age { get; set; }
+        public string UserName { get; set; }
     }
 
     public class ManageLoginsViewModel
@@ -57,6 +60,34 @@ namespace expenseTracker.Models
         [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
     }
+
+
+    public class ChangeAgeViewModel
+    {
+        [Required]
+        [Display(Name = "Current age")]
+        public int OldAge { get; set; }
+
+        [Required]
+        [Range(0, 100, ErrorMessage = "Требуется возвраст от 0 до 100.")]
+        [Display(Name = "New age")]
+        public int NewAge { get; set; }
+    }
+
+
+    public class ChangeUserNameViewModel
+    {
+        
+        [Display(Name = "Current Email")]
+        public string OldEmail { get; set; }
+
+
+        [Display(Name = "New Email")]
+        [Required(ErrorMessage = "The email address is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        public string NewEmail { get; set; }
+    }
+
 
     public class AddPhoneNumberViewModel
     {
