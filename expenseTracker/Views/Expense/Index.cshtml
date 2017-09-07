@@ -1,9 +1,10 @@
-﻿@model IEnumerable<expenseTracker.Models.Expense>
+﻿
+@model IEnumerable<expenseTracker.Models.Expense>
 
 @{
     ViewBag.Title = "Index";
 }
-
+<br/>
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
@@ -71,9 +72,9 @@
     @Html.ValidationSummary(true)
     <div class="form-actions no-color">
         <p>
-            <text>From</text> <input type="date" name="fromDate" id="fromDate" value=@ViewBag.Date />
-            <text>To</text> <input name="toDate" type="date" id="toDate" value=@ViewBag.Date />
-            <input type="submit" value="Search" />
+            <text>From</text> <input type="date" name="fromDate" id="fromDate" value=@TempData["notice"]/>
+            <text>To</text> <input name="toDate" type="date" id="toDate" value=@ViewBag.Date/>
+            <input type="submit" value="Search"/>
         </p>
         @Html.ActionLink("Back to Home", "Index", "Home")
     </div>

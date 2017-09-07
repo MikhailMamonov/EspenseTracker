@@ -96,3 +96,5 @@ C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\ex
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.assert.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.core.xml
 C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\bin\xunit.execution.desktop.xml
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.Migrations.MigratedDbemailovveride.resources
+C:\Users\mikhail.mamonov\documents\visual studio 2017\Projects\expenseTracker\expenseTracker\obj\Debug\expenseTracker.Migrations.MigratedDbrequiresovverided.resources

@@ -249,6 +249,14 @@
     <Compile Include="Migrations\201708140841002_AddedId.Designer.cs">
       <DependentUpon>201708140841002_AddedId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201709070737416_MigratedDb email ovveride.cs" />
+    <Compile Include="Migrations\201709070737416_MigratedDb email ovveride.Designer.cs">
+      <DependentUpon>201709070737416_MigratedDb email ovveride.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201709071201482_MigratedDb requires ovverided.cs" />
+    <Compile Include="Migrations\201709071201482_MigratedDb requires ovverided.Designer.cs">
+      <DependentUpon>201709071201482_MigratedDb requires ovverided.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AppDbInitializer.cs" />
@@ -374,6 +382,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201708140841002_AddedId.resx">
       <DependentUpon>201708140841002_AddedId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709070737416_MigratedDb email ovveride.resx">
+      <DependentUpon>201709070737416_MigratedDb email ovveride.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709071201482_MigratedDb requires ovverided.resx">
+      <DependentUpon>201709071201482_MigratedDb requires ovverided.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

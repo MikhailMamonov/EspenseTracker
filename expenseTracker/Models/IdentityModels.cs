@@ -14,7 +14,13 @@ namespace expenseTracker.Models
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit https://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser
     {
+        [Required]
+        [Range(0, 100, ErrorMessage = "Требуется возвраст от 0 до 100.")]
         public int Age { get; set; } // add propertiy age
+
+        [Required, EmailAddress, Display(Name = "Email")]
+        public override string Email { get; set; }
+
 
         // add records of expenses
         public virtual ICollection<Expense> Expenses { get; set; }

@@ -157,6 +157,7 @@ namespace expenseTracker.Controllers
             new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
             var listForDelete = UserManager.GetRoles(id).ToList().Select(rr =>
             new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
+            listForDelete.First().Selected = true;
             List<SelectListItem> roles = new List<SelectListItem>();
             foreach (var role in list)
             {
@@ -164,6 +165,7 @@ namespace expenseTracker.Controllers
                 { roles.Add(role); }
             }
 
+            roles.First().Selected = true;
             ViewBag.Roles = roles;
             IList<string> textList = UserManager.GetRoles(id);
             ViewBag.RolesForDisplay = textList;
@@ -176,14 +178,15 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator,admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        public async Task<ActionResult> Edit([Bind(Include = "Email,Id,Age")] ApplicationUser formuser, string id, string RoleId)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             var user = await UserManager.FindByIdAsync(id);
-            user.UserName = formuser.UserName;
+            user.UserName = formuser.Email;
+            user.Email = formuser.Email;
             user.Age = formuser.Age;
             if (ModelState.IsValid)
             {
@@ -283,10 +286,17 @@ namespace expenseTracker.Controllers
         public ActionResult RoleAddToUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser, string RoleId)
         {
             ApplicationUser user = UserManager.FindById(formuser.Id);
+            
+            
+
             if (!UserManager.IsInRole(user.Id, RoleName))
             {
                 UserManager.AddToRole(user.Id, RoleName);
-                ViewBag.ResultMessage = "Role created successfully !";
+                TempData["notice"] = "Role added to this user successfully !";
+            }
+            else
+            {
+                TempData["notice"] = "User is in this role can not be added !";
             }
 
             // prepopulat roles for the view dropdown
@@ -297,12 +307,9 @@ namespace expenseTracker.Controllers
                 if (!UserManager.IsInRole(user.Id, role.Value))
                 {
                     roles.Add(role);
-                    TempData["notice"] = "Role added to this user successfully !";
+                    
                 }
-                else
-                {
-                    TempData["notice"] = "User is in this role can not be added !";
-                }
+                
             }
 
             ViewBag.Roles = roles;
