@@ -180,7 +180,7 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator,admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Email,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        public async Task<ActionResult> Edit([Bind(Include = "Email,Id,Age")] ApplicationUser formuser, string id, string RoleId, string UserName)
         {
             if (id == null)
             {
@@ -190,6 +190,10 @@ namespace expenseTracker.Controllers
             user.UserName = formuser.Email;
             user.Email = formuser.Email;
             user.Age = formuser.Age;
+            var roles = UserManager.GetRoles(id);
+            foreach(var i in roles){
+                UserManager.AddToRole(id,i);
+            }
             if (ModelState.IsValid)
             {
                 //Update the user details
@@ -198,14 +202,7 @@ namespace expenseTracker.Controllers
                 //If user has existing Role then remove the user from the role
                 // This also accounts for the case when the Admin selected Empty from the drop-down and
                 // this means that all roles for the user must be removed
-                var rolesForUser = await UserManager.GetRolesAsync(id);
-                if (rolesForUser.Count() > 0)
-                {
-                    foreach (var item in rolesForUser)
-                    {
-                        var result = await UserManager.RemoveFromRoleAsync(id, item);
-                    }
-                }
+                
             }
             // prepopulat roles for the view dropdown
             
@@ -229,7 +226,9 @@ namespace expenseTracker.Controllers
                 { roles.Add(role); }
             }
 
+            if(roles.Count!=0)
             roles.First().Selected = true;
+
             return roles;
         }
 
@@ -237,7 +236,8 @@ namespace expenseTracker.Controllers
         {
             var listForDelete = UserManager.GetRoles(id).ToList().Select(rr =>
                 new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
-            listForDelete.First().Selected = true;
+            if (listForDelete.Count != 0)
+                listForDelete.First().Selected = true;
             return listForDelete;
         }
 
@@ -313,13 +313,13 @@ namespace expenseTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult RoleAddToUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser, string RoleId)
+        public ActionResult RoleAddToUser(string UserName, string RoleName, [Bind(Include = "Id,Email,Age")] ApplicationUser formuser, string RoleId)
         {
             ApplicationUser user = UserManager.FindById(formuser.Id);
             
             
-
-            if (!UserManager.IsInRole(user.Id, RoleName))
+           
+            if ((RoleName != null)&&(!UserManager.IsInRole(user.Id, RoleName)))
             {
                 UserManager.AddToRole(user.Id, RoleName);
                 TempData["notice"] = "Role added to this user successfully !";
@@ -342,6 +342,9 @@ namespace expenseTracker.Controllers
                 
             }
 
+            user.UserName = formuser.Email;
+            user.Email = formuser.Email;
+            user.Age = formuser.Age;
             ViewBag.Roles = roles;
             var listForDelete = UserManager.GetRoles(formuser.Id).ToList().Select(rr => new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
             IList<string> displayRoles = UserManager.GetRoles(user.Id);
@@ -355,7 +358,7 @@ namespace expenseTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteRoleForUser(string UserName, string RoleName, [Bind(Include = "Id")] ApplicationUser formuser)
+        public ActionResult DeleteRoleForUser(string UserName, string RoleName, [Bind(Include = "Email,Id,Age")] ApplicationUser formuser)
         {
             ApplicationUser user = UserManager.FindById(formuser.Id);
             if (user.Roles.Count > 1) { 
@@ -375,6 +378,10 @@ namespace expenseTracker.Controllers
                 if (!UserManager.IsInRole(user.Id, role.Value))
                 { roles.Add(role); }
             }
+
+            user.UserName = formuser.Email;
+            user.Email = formuser.Email;
+            user.Age = formuser.Age;
             ViewBag.Roles = roles;
             var listForDelete = UserManager.GetRoles(formuser.Id).ToList().Select(rr => new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
             IList<string> displayRoles = UserManager.GetRoles(user.Id);

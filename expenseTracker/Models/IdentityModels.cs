@@ -49,6 +49,7 @@ namespace expenseTracker.Models
         public string Comment { get; set; }
         //general amount
         [Required(ErrorMessage = "Пожалуйста, введите сумму")]
+        [Range(0, Int32.MaxValue, ErrorMessage = "Требуется положительная сумма.")]
         public int Amount { get; set; }
         //date and time
         [Required(ErrorMessage = "Пожалуйста, введите дату и время")]
