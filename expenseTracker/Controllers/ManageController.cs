@@ -92,22 +92,37 @@ namespace expenseTracker.Controllers
        [Authorize(Roles = "admin,moderator")]
         public ActionResult CreateUser()
         {
-            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
-            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            list.First().Selected = true;
-            ViewBag.Roles = list;
+            
+            ViewBag.Roles = GetRoles();
             return View();
         }
 
-    
+        List<SelectListItem> GetRoles()
+        {
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+                new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+            list.First().Selected = true;
+            return list;
+        }
+
         // POST: /Manage/CreateUser
         [Authorize(Roles = "admin,moderator")]
          [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateUser(RegisterViewModel model, string RoleName)
         {
+            var users = UserManager.Users.ToList();
             if (ModelState.IsValid)
             {
+                foreach (var i in users)
+                {
+                    if (i.Email.Equals(model.Email))
+                    { 
+                        TempData["notice"] = "Email already exists in system.";
+                        ViewBag.Roles = GetRoles();
+                        return View();
+                    }
+                }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Age = model.Age };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
@@ -153,23 +168,10 @@ namespace expenseTracker.Controllers
 
 
             // prepopulat roles for the view dropdown
-            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
-            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            var listForDelete = UserManager.GetRoles(id).ToList().Select(rr =>
-            new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
-            listForDelete.First().Selected = true;
-            List<SelectListItem> roles = new List<SelectListItem>();
-            foreach (var role in list)
-            {
-                if (!UserManager.IsInRole(user.Id, role.Value))
-                { roles.Add(role); }
-            }
-
-            roles.First().Selected = true;
-            ViewBag.Roles = roles;
+            ViewBag.Roles = GetRolesForAdd(user);
             IList<string> textList = UserManager.GetRoles(id);
             ViewBag.RolesForDisplay = textList;
-            ViewBag.RolesForDelete = listForDelete;
+            ViewBag.RolesForDelete = GetRolesForDelete(id);
             return View(user);
         }
 
@@ -205,10 +207,39 @@ namespace expenseTracker.Controllers
                     }
                 }
             }
-            return RedirectToAction("GetAllUsers");
+            // prepopulat roles for the view dropdown
+            
+            ViewBag.Roles = GetRolesForAdd(user);
+            IList<string> textList = UserManager.GetRoles(id);
+            ViewBag.RolesForDisplay = textList;
+            ViewBag.RolesForDelete = GetRolesForDelete(id);
+            return View();
         }
 
 
+        List<SelectListItem> GetRolesForAdd(ApplicationUser user)
+        {
+            var list = RoleManager.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+                new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+
+            List<SelectListItem> roles = new List<SelectListItem>();
+            foreach (var role in list)
+            {
+                if (!UserManager.IsInRole(user.Id, role.Value))
+                { roles.Add(role); }
+            }
+
+            roles.First().Selected = true;
+            return roles;
+        }
+
+        List<SelectListItem> GetRolesForDelete(string id)
+        {
+            var listForDelete = UserManager.GetRoles(id).ToList().Select(rr =>
+                new SelectListItem { Value = rr.ToString(), Text = rr.ToString() }).ToList();
+            listForDelete.First().Selected = true;
+            return listForDelete;
+        }
 
         //
         // GET: /Manage/Details
@@ -249,7 +280,7 @@ namespace expenseTracker.Controllers
         [Authorize(Roles = "moderator,admin")]
         [HttpPost, ActionName("DeleteUser")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmedUser([Bind(Include = "UserName,Id,Age")] ApplicationUser formuser, string id, string RoleId)
+        public async Task<ActionResult> DeleteConfirmedUser([Bind(Include = "Email,Id,Age")] ApplicationUser formuser, string id, string RoleId)
         {
             if (id == null)
             {
@@ -257,8 +288,7 @@ namespace expenseTracker.Controllers
             }
             var user = await UserManager.FindByIdAsync(id);
         
-            if (ModelState.IsValid)
-            {
+ 
                 //If user has existing Role then remove the user from the role
                 // This also accounts for the case when the Admin selected Empty from the drop-down and
                 // this means that all roles for the user must be removed
@@ -275,7 +305,7 @@ namespace expenseTracker.Controllers
                 await UserManager.DeleteAsync(user);
 
                 
-            }
+            
             return RedirectToAction("GetAllUsers");
         }
 

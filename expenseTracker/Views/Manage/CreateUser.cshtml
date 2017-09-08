@@ -7,6 +7,16 @@
 
 @using (Html.BeginForm("CreateUser", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
 {
+
+    if (TempData["notice"] != null && (string)TempData["notice"] != "")
+     {
+         if ((string) TempData["notice"] != "") 
+         {
+             <p class="text-danger">@TempData["notice"]</p>
+         }
+         
+     }
+
     @Html.AntiForgeryToken()
     <h4>Create a new user.</h4>
     <hr />
