@@ -75,11 +75,18 @@ namespace expenseTracker.Controllers
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
+            //SignInManager.SignInWithApplication(UserManager.FindById(User.Identity.GetUserId()), false);
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
+                {
+                   // var user = UserManager.FindByName(model.Email);
+                        //SignInManager.SignInWithApplication(user, false);
+
+                        return RedirectToLocal(returnUrl);
+                    }
+                    
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -89,6 +96,11 @@ namespace expenseTracker.Controllers
                     ModelState.AddModelError("", "Invalid login attempt.");
                     return View(model);
             }
+            
+            
+
+
+
         }
 
         //

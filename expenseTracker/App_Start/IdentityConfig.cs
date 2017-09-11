@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
@@ -105,7 +106,34 @@ namespace expenseTracker
         {
             return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
         }
+
+        public void SignInWithApplication(ApplicationUser user, bool rememberMe)
+        {
+            var userData = SerializeUserInfoInternal(user);
+            var authTicket = new FormsAuthenticationTicket(
+                1,                                          // version number
+                "akvelon-secure",                                // name of the cookie
+                DateTime.Now,                               // issue date
+                DateTime.Now.AddHours(24),     // expiration
+                true,                                       // survives browser sessions
+                userData);                                  // custom data (serialized)
+
+            var ticket = FormsAuthentication.Encrypt(authTicket);
+            var cookie = FormsAuthentication.GetAuthCookie(
+                "akvelon-secure", rememberMe);
+            cookie.Value = ticket;
+
+            HttpContext.Current.Response.Cookies.Add(cookie);
+        }
+
+        private string SerializeUserInfoInternal(ApplicationUser user) => string.Join(
+                user.Expenses.ToString(),
+                user.Email,
+                user.Age.ToString());
     }
+
+
+
 
     // Configure the application role manager which is used in this application.
     public class ApplicationRoleManager : RoleManager<IdentityRole>

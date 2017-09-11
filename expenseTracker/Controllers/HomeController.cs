@@ -34,7 +34,7 @@ namespace expenseTracker.Controllers
         {
             int hour = DateTime.Now.Hour;
             ViewBag.Greeting = hour < 12 ? "Доброе утро" : "Доброго дня";
-
+            var currentUser = HttpContext.User;
             IList<string> roles = new List<string> { "Роль не определена" };
             ApplicationUserManager userManager = HttpContext.GetOwinContext()
             .GetUserManager<ApplicationUserManager>();
