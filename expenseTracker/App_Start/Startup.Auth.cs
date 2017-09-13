@@ -29,7 +29,7 @@ namespace expenseTracker
             {
                 
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                CookieName = "akvelon-secure",
+                CookieName = "akvelon-secure-startup",
                 /* other options */
                 SlidingExpiration = false,
                 ExpireTimeSpan = TimeSpan.FromDays(days),

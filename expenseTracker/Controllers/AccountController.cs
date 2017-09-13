@@ -82,7 +82,8 @@ namespace expenseTracker.Controllers
                 case SignInStatus.Success:
                 {
                    var user = UserManager.FindByName(model.Email);
-                        SignInManager.SignInWithApplication(user, true);
+                    await SignInManager.SignInAsync(user, true, true);
+                   SignInManager.SignInWithApplication(user, true);
 
                         return RedirectToLocal(returnUrl);
                     }
