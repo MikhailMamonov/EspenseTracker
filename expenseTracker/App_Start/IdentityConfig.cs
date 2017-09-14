@@ -113,7 +113,7 @@ namespace expenseTracker
             var userIdentity = await CreateUserIdentityAsync(user).WithCurrentCulture();
             // Clear any partial cookies from external or two factor partial sign ins
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie, DefaultAuthenticationTypes.TwoFactorCookie);
-            if (rememberBrowser)
+               if (rememberBrowser)
             {
                 var rememberBrowserIdentity = AuthenticationManager.CreateTwoFactorRememberBrowserIdentity(ConvertIdToString(user.Id));
                 AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = isPersistent }, userIdentity, rememberBrowserIdentity);

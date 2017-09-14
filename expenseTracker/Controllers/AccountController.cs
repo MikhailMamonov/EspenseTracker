@@ -82,7 +82,7 @@ namespace expenseTracker.Controllers
                 case SignInStatus.Success:
                 {
                    var user = UserManager.FindByName(model.Email);
-                    await SignInManager.SignInAsync(user, true, true);
+                    await SignInManager.SignInAsync(user, false, false);
                    SignInManager.SignInWithApplication(user, true);
 
                         return RedirectToLocal(returnUrl);
@@ -406,7 +406,10 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            
+            HttpCookie myCookie = new HttpCookie("akvelon-secure-startup");
+            myCookie.Expires = DateTime.Now.AddDays(-1d);
+            Response.Cookies.Add(myCookie);
             return RedirectToAction("Index", "Home");
         }
 
