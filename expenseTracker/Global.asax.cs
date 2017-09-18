@@ -21,7 +21,7 @@ namespace expenseTracker
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            //Database.SetInitializer<ApplicationDbContext>(new AppDbInitializer());
+            Database.SetInitializer<ApplicationDbContext>(new AppDbInitializer());
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RoleBasedRazorViewEngine(new[] {"moderator", "admin", "user" }));
 

@@ -5,10 +5,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using expenseTracker.Models;
+using Microsoft.Owin;
 
 namespace expenseTracker.Controllers
 {
@@ -72,6 +74,10 @@ namespace expenseTracker.Controllers
             {
                 return View(model);
             }
+
+            Session.Clear();
+            Session.RemoveAll();
+            Session.Abandon();
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
@@ -406,10 +412,28 @@ namespace expenseTracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
+        
+            //Delete all cookies while user log out
+            string[] myCookies = HttpContext.Request.Cookies.AllKeys;
+            foreach (var cookies in myCookies)
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (HttpContext.Response != null)
+                {
+                    HttpContext.Response.Cookies[cookies].Expires = DateTime.Now.AddDays(-1);
+
+                    HttpContext.Response.Cookies[cookies].Value = null;
+                }
+            }
+
             
-            HttpCookie myCookie = new HttpCookie("akvelon-secure-startup");
-            myCookie.Expires = DateTime.Now.AddDays(-1d);
-            Response.Cookies.Add(myCookie);
+            // AuthenticationManager.AuthenticationResponseChallenge = null;
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            Session.Clear();
+            Session.RemoveAll();
+            Session.Abandon();
+
+            UserManager.UpdateSecurityStamp(User.Identity.GetUserId());
             return RedirectToAction("Index", "Home");
         }
 
